@@ -6,7 +6,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once '../config/openai_config.php';
-
+var_dump($API_KEY);
+exit;
 $input = file_get_contents("php://input");
 
 $data = json_decode($input, true);
