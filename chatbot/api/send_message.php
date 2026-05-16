@@ -183,6 +183,7 @@ curl_close($ch);
 
 $result = json_decode($response, true);
 
+
 /* =========================================
    API ERROR
 ========================================= */
@@ -190,7 +191,8 @@ $result = json_decode($response, true);
 if($httpCode != 200){
 
     echo json_encode([
-        "reply" => $response
+      //  "reply" => $response
+		"reply" => "AI service temporarily unavailable."
     ]);
 
     exit;
