@@ -198,7 +198,7 @@ $result = json_decode($response, true);
 if($httpCode != 200){
 
     echo json_encode([
-        "reply" => "AI service temporarily unavailable."
+        "reply" => $response
     ]);
 
     exit;
