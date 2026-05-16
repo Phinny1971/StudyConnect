@@ -1,0 +1,31 @@
+API key details
+
+API Key
+AIzaSyDK6Z3gL8gRd10WAdAYNEdJax_INcBzsW8
+
+Name
+Gemini API Key
+
+Project name
+projects/383820508671
+
+Project number
+383820508671
+
+https://aistudio.google.com/app/api-keys?utm_source=chatgpt.com&project=project-d96cf761-3b74-4459-955
+
+curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H 'X-goog-api-key: AIzaSyDK6Z3gL8gRd10WAdAYNEdJax_INcBzsW8' \
+  -X POST \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          {
+            "text": "Explain how AI works in a few words"
+          }
+        ]
+      }
+    ]
+  }'
