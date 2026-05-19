@@ -97,6 +97,31 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
+function nullIfEmpty($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : trim($value);
+}
+
+function decimalOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : floatval($value);
+}
+
+function intOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : intval($value);
+}
+
+function dateOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : $value;
+}
+
+
 // Create uploads directory if not exists
 $uploadDir = "uploads/";
 if (!file_exists($uploadDir)) {
@@ -163,7 +188,8 @@ $Country_code = trim(htmlspecialchars($row['country_code']));
 $stmt->close();
 //----------------
 
-$other_country= $_POST['other_country'];
+//$other_country= $_POST['other_country'];
+$other_country = nullIfEmpty($_POST['other_country'] ?? null);
 $Branch_name= $_POST['Branch_name'];
 $DateOfBirth= $_POST['DateOfBirth'];
 
@@ -174,12 +200,12 @@ $Passport_Upload=uploadFile('Passport_Upload');
 
 // Marks
 $marks = [
-  '10th' => $_POST['marks_10th'],
-  'intermediate' => $_POST['marks_intermediate'],
-  'degree' => $_POST['marks_degree'],
-  'pg' => $_POST['marks_pg'] ?? null,
-  'diploma' => $_POST['marks_diploma'] ?? null,
-  'other' => $_POST['marks_other'] ?? null
+  '10th' => decimalOrNull($_POST['marks_10th'] ?? null),
+  'intermediate' => decimalOrNull($_POST['marks_intermediate'] ?? null),
+  'degree' => decimalOrNull($_POST['marks_degree'] ?? null),
+  'pg' => decimalOrNull($_POST['marks_pg'] ?? null),
+  'diploma' => decimalOrNull($_POST['marks_diploma'] ?? null),
+  'other' => decimalOrNull($_POST['marks_other'] ?? null)
 ];
 
 // Uploads Marks
@@ -194,12 +220,12 @@ $certs = [
 
 // Experience
 $experience = [
-  'Exp1From_date' => $_POST['Exp1From_date'],
-  'Exp1To_date' => $_POST['Exp1To_date'],
-  'Exp2From_date' => $_POST['Exp2From_date'],
-  'Exp2To_date' => $_POST['Exp2To_date'] ?? null,
-  'Exp3From_date' => $_POST['Exp3From_date'] ?? null,
-  'Exp3To_date' => $_POST['Exp3To_date'] ?? null
+  'Exp1From_date' => dateOrNull($_POST['Exp1From_date'] ?? null),
+  'Exp1To_date' => dateOrNull($_POST['Exp1To_date'] ?? null),
+  'Exp2From_date' => dateOrNull($_POST['Exp2From_date'] ?? null),
+  'Exp2To_date' => dateOrNull($_POST['Exp2To_date'] ?? null),
+  'Exp3From_date' => dateOrNull($_POST['Exp3From_date'] ?? null),
+  'Exp3To_date' => dateOrNull($_POST['Exp3To_date'] ?? null)
 ];
 
 // Uploads Experience
