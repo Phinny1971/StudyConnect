@@ -1,6 +1,8 @@
- <?php
- 
- session_start();
+<?php
+session_start();
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Prevent browser cache
 header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
