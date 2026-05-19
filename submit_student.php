@@ -194,8 +194,8 @@ $Branch_name= $_POST['Branch_name'];
 $DateOfBirth= $_POST['DateOfBirth'];
 
 $Passport_no=$_POST['Passport_no'];
-$Passport_issue=$_POST['Passport_issue'];
-$Passport_Expiry=$_POST['Passport_Expiry'];
+$Passport_issue = dateOrNull($_POST['Passport_issue'] ?? null);
+$Passport_Expiry = dateOrNull($_POST['Passport_Expiry'] ?? null);
 $Passport_Upload=uploadFile('Passport_Upload');
 
 // Marks
@@ -320,54 +320,57 @@ $conn->close();
 
 function saveLangAptTest($conn, $last_id, $Country_code)
 {
-$IELTS_OA= $_POST['IELTS_OA'];
-$IELTS_READ= $_POST['IELTS_READ'];
-$IELTS_WRITE= $_POST['IELTS_WRITE'];
-$IELTS_SPEAK= $_POST['IELTS_SPEAK'];
-$IELTS_LISTEN= $_POST['IELTS_LISTEN'];
-$PTE_OA= $_POST['PTE_OA'];
-$PTE_READ= $_POST['PTE_READ'];
-$PTE_WRITE= $_POST['PTE_WRITE'];
-$PTE_SPEAK= $_POST['PTE_SPEAK'];
-$PTE_LISTEN= $_POST['PTE_LISTEN'];
-$TOEFL_OA= $_POST['TOEFL_OA'];
-$TOEFL_READ= $_POST['TOEFL_READ'];
-$TOEFL_WRITE= $_POST['TOEFL_WRITE'];
-$TOEFL_SPEAK= $_POST['TOEFL_SPEAK'];
-$TOEFL_LISTEN= $_POST['TOEFL_LISTEN'];
-$LANGCERT_OA= $_POST['LANGCERT_OA'];
-$LANGCERT_READ= $_POST['LANGCERT_READ'];
-$LANGCERT_WRITE= $_POST['LANGCERT_WRITE'];
-$LANGCERT_SPEAK= $_POST['LANGCERT_SPEAK'];
-$LANGCERT_LISTEN= $_POST['LANGCERT_LISTEN'];
-$DULINGO_OA= $_POST['DULINGO_OA'];
-$DULINGO_READ= $_POST['DULINGO_READ'];
-$DULINGO_WRITE= $_POST['DULINGO_WRITE'];
-$DULINGO_SPEAK= $_POST['DULINGO_SPEAK'];
-$DULINGO_LISTEN= $_POST['DULINGO_LISTEN'];
-$ENGOTHER_OA= $_POST['ENGOTHER_OA'];
-$ENGOTHER_READ= $_POST['ENGOTHER_READ'];
-$ENGOTHER_WRITE= $_POST['ENGOTHER_WRITE'];
-$ENGOTHER_SPEAK= $_POST['ENGOTHER_SPEAK'];
-$ENGOTHER_LISTEN= $_POST['ENGOTHER_LISTEN'];
-$ENGOTHER_NAME= $_POST['ENGOTHER_NAME'];
-$GRE_OA= $_POST['GRE_OA'];
-$SAT_OA= $_POST['SAT_OA'];
-$GMAT_OA= $_POST['GMAT_OA'];
-$APTOTHER_NAME= $_POST['APTOTHER_NAME'];
-$APTOTHER_OA= $_POST['APTOTHER_OA'];
-
-$ENGOTHER_UPLOAD= uploadFile('ENGOTHER_UPLOAD');
-$IELTS_UPLOAD= uploadFile('IELTS_UPLOAD');
-$APTOTHER_UPLOAD= uploadFile('APTOTHER_UPLOAD');
-$GMAT_UPLOAD= uploadFile('GMAT_UPLOAD');
-$SAT_UPLOAD= uploadFile('SAT_UPLOAD');
-$GRE_UPLOAD= uploadFile('GRE_UPLOAD');
-$DULINGO_UPLOAD= uploadFile('DULINGO_UPLOAD');
-$LANGCERT_UPLOAD= uploadFile('LANGCERT_UPLOAD');
-$IELTS_UPLOAD= uploadFile('IELTS_UPLOAD');
-$PTE_UPLOAD= uploadFile('PTE_UPLOAD');
-$TOEFL_UPLOAD= uploadFile('TOEFL_UPLOAD');
+$IELTS_OA=decimalOrNull( $_POST['IELTS_OA'] ?? null);
+$IELTS_READ=decimalOrNull( $_POST['IELTS_READ'] ?? null);
+$IELTS_WRITE=decimalOrNull( $_POST['IELTS_WRITE'] ?? null);
+$IELTS_SPEAK=decimalOrNull( $_POST['IELTS_SPEAK'] ?? null);
+$IELTS_LISTEN=decimalOrNull( $_POST['IELTS_LISTEN'] ?? null);
+$PTE_OA=decimalOrNull( $_POST['PTE_OA'] ?? null);
+$PTE_READ=decimalOrNull( $_POST['PTE_READ'] ?? null);
+$PTE_WRITE=decimalOrNull( $_POST['PTE_WRITE'] ?? null);
+$PTE_SPEAK=decimalOrNull( $_POST['PTE_SPEAK'] ?? null);
+$PTE_LISTEN=decimalOrNull( $_POST['PTE_LISTEN'] ?? null);
+$TOEFL_OA=decimalOrNull( $_POST['TOEFL_OA'] ?? null);
+$TOEFL_READ=decimalOrNull( $_POST['TOEFL_READ'] ?? null);
+$TOEFL_WRITE=decimalOrNull( $_POST['TOEFL_WRITE'] ?? null);
+$TOEFL_SPEAK=decimalOrNull( $_POST['TOEFL_SPEAK'] ?? null);
+$TOEFL_LISTEN=decimalOrNull( $_POST['TOEFL_LISTEN'] ?? null);
+$LANGCERT_OA=decimalOrNull( $_POST['LANGCERT_OA'] ?? null);
+$LANGCERT_READ=decimalOrNull( $_POST['LANGCERT_READ'] ?? null);
+$LANGCERT_WRITE=decimalOrNull( $_POST['LANGCERT_WRITE'] ?? null);
+$LANGCERT_SPEAK=decimalOrNull( $_POST['LANGCERT_SPEAK'] ?? null);
+$LANGCERT_LISTEN=decimalOrNull( $_POST['LANGCERT_LISTEN'] ?? null);
+$DULINGO_OA=decimalOrNull( $_POST['DULINGO_OA'] ?? null);
+$DULINGO_READ=decimalOrNull( $_POST['DULINGO_READ'] ?? null);
+$DULINGO_WRITE=decimalOrNull( $_POST['DULINGO_WRITE'] ?? null);
+$DULINGO_SPEAK=decimalOrNull( $_POST['DULINGO_SPEAK'] ?? null);
+$DULINGO_LISTEN=decimalOrNull( $_POST['DULINGO_LISTEN'] ?? null);
+$ENGOTHER_OA=decimalOrNull( $_POST['ENGOTHER_OA'] ?? null);
+$ENGOTHER_READ=decimalOrNull( $_POST['ENGOTHER_READ'] ?? null);
+$ENGOTHER_WRITE=decimalOrNull( $_POST['ENGOTHER_WRITE'] ?? null);
+$ENGOTHER_SPEAK=decimalOrNull( $_POST['ENGOTHER_SPEAK'] ?? null);
+$ENGOTHER_LISTEN=decimalOrNull( $_POST['ENGOTHER_LISTEN'] ?? null);
+//$ENGOTHER_NAME=decimalOrNull( $_POST['ENGOTHER_NAME'] ?? null);
+$ENGOTHER_NAME = nullIfEmpty($_POST['ENGOTHER_NAME'] ?? null);
+	
+$GRE_OA=decimalOrNull( $_POST['GRE_OA'] ?? null);
+$SAT_OA=decimalOrNull( $_POST['SAT_OA'] ?? null);
+$GMAT_OA=decimalOrNull( $_POST['GMAT_OA'] ?? null);
+$APTOTHER_NAME=decimalOrNull( $_POST['APTOTHER_NAME'] ?? null);
+//$APTOTHER_OA=decimalOrNull( $_POST['APTOTHER_OA'] ?? null);
+$APTOTHER_NAME = nullIfEmpty($_POST['APTOTHER_NAME'] ?? null);
+	
+$ENGOTHER_UPLOAD=decimalOrNull( uploadFile('ENGOTHER_UPLOAD') ?? null);
+$IELTS_UPLOAD=decimalOrNull( uploadFile('IELTS_UPLOAD') ?? null);
+$APTOTHER_UPLOAD=decimalOrNull( uploadFile('APTOTHER_UPLOAD') ?? null);
+$GMAT_UPLOAD=decimalOrNull( uploadFile('GMAT_UPLOAD') ?? null);
+$SAT_UPLOAD=decimalOrNull( uploadFile('SAT_UPLOAD') ?? null);
+$GRE_UPLOAD=decimalOrNull( uploadFile('GRE_UPLOAD') ?? null);
+$DULINGO_UPLOAD=decimalOrNull( uploadFile('DULINGO_UPLOAD') ?? null);
+$LANGCERT_UPLOAD=decimalOrNull( uploadFile('LANGCERT_UPLOAD') ?? null);
+$IELTS_UPLOAD=decimalOrNull( uploadFile('IELTS_UPLOAD') ?? null);
+$PTE_UPLOAD=decimalOrNull( uploadFile('PTE_UPLOAD') ?? null);
+$TOEFL_UPLOAD=decimalOrNull( uploadFile('TOEFL_UPLOAD') ?? null);
 
 // Prepare SQL
 $sql = "INSERT INTO studentlanguagetests(
