@@ -1,5 +1,48 @@
 <?php
 ob_start();
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+function nullIfEmpty($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : trim($value);
+}
+
+function decimalOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : floatval($value);
+}
+
+function dateOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : $value;
+}
+
+$host = getenv('MYSQLHOST');
+$user = getenv('MYSQLUSER');
+$password = getenv('MYSQLPASSWORD');
+$database = getenv('MYSQLDATABASE');
+$port = getenv('MYSQLPORT');
+
+/*
+$host = "localhost";
+$dbname = "studyconnect";
+$username = "StudyConnect";
+$password = "Study@2025";
+*/
+
+// Create connection
+$conn = mysqli_connect($host, $user, $password, $database, $port);
+//$conn = new mysqli($host, $username, $password, $dbname);
+
+
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+	
 ?>
 
 <link rel="stylesheet" href="css/style.css">
@@ -79,46 +122,9 @@ function closeMsgModal() {
 </script>
 
 <?php
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
 
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
 
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
-
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
-function nullIfEmpty($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : trim($value);
-}
-
-function decimalOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : floatval($value);
-}
-
-function dateOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : $value;
-}
 
 $uploadDir = "uploads/";
 if (!file_exists($uploadDir)) {
