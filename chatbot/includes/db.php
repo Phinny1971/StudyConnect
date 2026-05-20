@@ -13,10 +13,12 @@ $username = "StudyConnect";
 $password = "Study@2025";
 */
 
+// Create connection
 $conn = mysqli_connect($host, $user, $password, $database, $port);
+//$conn = new mysqli($host, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-    die("Database Connection Failed: " . $conn->connect_error);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 
 $conn->set_charset("utf8mb4");
