@@ -48,7 +48,7 @@ $result = $stmt->get_result();
 
 <link rel="stylesheet" href="css/style.css">
 
-<script src="/studyconnect/js/jquery-3.6.0.min.js"></script>
+<script src="js/jquery-3.6.0.min.js"></script>
 
 <style>
 
