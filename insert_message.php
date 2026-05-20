@@ -1,8 +1,10 @@
 <?php
-$host = "sql101.infinityfree.com"; 
-$dbname = "if0_41864403_studyconnect";
-$username = "if0_41864403"; 
-$password = "Study2025";
+
+$host = getenv('MYSQLHOST');
+$user = getenv('MYSQLUSER');
+$password = getenv('MYSQLPASSWORD');
+$database = getenv('MYSQLDATABASE');
+$port = getenv('MYSQLPORT');
 
 /*
 $host = "localhost";
@@ -11,11 +13,14 @@ $username = "StudyConnect";
 $password = "Study@2025";
 */
 
+// Create connection
+$conn = mysqli_connect($host, $user, $password, $database, $port);
+//$conn = new mysqli($host, $username, $password, $dbname);
 
-$conn = new mysqli($host, $username, $password, $dbname);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}  
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
