@@ -1,5 +1,6 @@
 <?php
 ob_start();
+?>
 
 <link rel="stylesheet" href="css/style.css">
 
