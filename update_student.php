@@ -1,3 +1,6 @@
+<?php
+ob_start();
+
 <link rel="stylesheet" href="css/style.css">
 
 <!-- Custom Modal -->
@@ -96,6 +99,26 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+function nullIfEmpty($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : trim($value);
+}
+
+function decimalOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : floatval($value);
+}
+
+function dateOrNull($value) {
+    return ($value === '' || $value === null)
+        ? null
+        : $value;
+}
+
 $uploadDir = "uploads/";
 if (!file_exists($uploadDir)) {
   mkdir($uploadDir, 0777, true);
@@ -136,13 +159,14 @@ $address = $_POST['address'];
 $email = $_POST['email'];
 $phone = $_POST['phone'];
 $preferred_country = $_POST['preferred_country'];
-$other_country = $_POST['other_country'];
-$Branch_name = $_POST['Branch_name'];
-$DateOfBirth = $_POST['DateOfBirth'];
 
-$Passport_no = $_POST['Passport_no'];
-$Passport_issue = $_POST['Passport_issue'];
-$Passport_Expiry = $_POST['Passport_Expiry'];
+$other_country = nullIfEmpty($_POST['other_country'] ?? null);
+$Branch_name = nullIfEmpty($_POST['Branch_name'] ?? null);
+$DateOfBirth = dateOrNull($_POST['DateOfBirth'] ?? null);
+$Passport_no = nullIfEmpty($_POST['Passport_no'] ?? null);
+$Passport_issue = dateOrNull($_POST['Passport_issue'] ?? null);
+$Passport_Expiry = dateOrNull($_POST['Passport_Expiry'] ?? null);
+	
 
 $Passport_Upload = uploadFile('Passport_Upload', $_POST['existing_Passport_Upload'] ?? "");
 
@@ -156,14 +180,13 @@ $stmt->close();
 
 // ================= MARKS =================
 $marks = [
-  '10th' => $_POST['marks_10th'],
-  'intermediate' => $_POST['marks_intermediate'],
-  'degree' => $_POST['marks_degree'],
-  'pg' => $_POST['marks_pg'] ?? null,
-  'diploma' => $_POST['marks_diploma'] ?? null,
-  'other' => $_POST['marks_other'] ?? null
+  '10th' => decimalOrNull($_POST['marks_10th'] ?? null),
+  'intermediate' => decimalOrNull($_POST['marks_intermediate'] ?? null),
+  'degree' => decimalOrNull($_POST['marks_degree'] ?? null),
+  'pg' => decimalOrNull($_POST['marks_pg'] ?? null),
+  'diploma' => decimalOrNull($_POST['marks_diploma'] ?? null),
+  'other' => decimalOrNull($_POST['marks_other'] ?? null)
 ];
-
 // ================= CERT FILES =================
 $certs = [
   '10th' => uploadFile('cert_10th', $_POST['existing_cert_10th'] ?? ""),
@@ -176,14 +199,13 @@ $certs = [
 
 // ================= EXPERIENCE =================
 $experience = [
-  'Exp1From_date' => $_POST['Exp1From_date'],
-  'Exp1To_date' => $_POST['Exp1To_date'],
-  'Exp2From_date' => $_POST['Exp2From_date'],
-  'Exp2To_date' => $_POST['Exp2To_date'],
-  'Exp3From_date' => $_POST['Exp3From_date'],
-  'Exp3To_date' => $_POST['Exp3To_date']
+  'Exp1From_date' => dateOrNull($_POST['Exp1From_date'] ?? null),
+  'Exp1To_date' => dateOrNull($_POST['Exp1To_date'] ?? null),
+  'Exp2From_date' => dateOrNull($_POST['Exp2From_date'] ?? null),
+  'Exp2To_date' => dateOrNull($_POST['Exp2To_date'] ?? null),
+  'Exp3From_date' => dateOrNull($_POST['Exp3From_date'] ?? null),
+  'Exp3To_date' => dateOrNull($_POST['Exp3To_date'] ?? null)
 ];
-
 // ================= EXPERIENCE FILES =================
 $certsExp = [
   'Exp1_Cert' => uploadFile('Exp1_Cert', $_POST['existing_Exp1_Cert'] ?? ""),
@@ -309,15 +331,59 @@ $IELTS_UPLOAD     = getFile('IELTS_UPLOAD');
 $PTE_UPLOAD       = getFile('PTE_UPLOAD');
 $TOEFL_UPLOAD     = getFile('TOEFL_UPLOAD');
 
+$IELTS_OA = decimalOrNull($_POST['IELTS_OA'] ?? null);
+$IELTS_READ = decimalOrNull($_POST['IELTS_READ'] ?? null);
+$IELTS_WRITE = decimalOrNull($_POST['IELTS_WRITE'] ?? null);
+$IELTS_SPEAK = decimalOrNull($_POST['IELTS_SPEAK'] ?? null);
+$IELTS_LISTEN = decimalOrNull($_POST['IELTS_LISTEN'] ?? null);
+
+$PTE_OA = decimalOrNull($_POST['PTE_OA'] ?? null);
+$PTE_READ = decimalOrNull($_POST['PTE_READ'] ?? null);
+$PTE_WRITE = decimalOrNull($_POST['PTE_WRITE'] ?? null);
+$PTE_SPEAK = decimalOrNull($_POST['PTE_SPEAK'] ?? null);
+$PTE_LISTEN = decimalOrNull($_POST['PTE_LISTEN'] ?? null);
+
+$TOEFL_OA = decimalOrNull($_POST['TOEFL_OA'] ?? null);
+$TOEFL_READ = decimalOrNull($_POST['TOEFL_READ'] ?? null);
+$TOEFL_WRITE = decimalOrNull($_POST['TOEFL_WRITE'] ?? null);
+$TOEFL_SPEAK = decimalOrNull($_POST['TOEFL_SPEAK'] ?? null);
+$TOEFL_LISTEN = decimalOrNull($_POST['TOEFL_LISTEN'] ?? null);
+
+$LANGCERT_OA = decimalOrNull($_POST['LANGCERT_OA'] ?? null);
+$LANGCERT_READ = decimalOrNull($_POST['LANGCERT_READ'] ?? null);
+$LANGCERT_WRITE = decimalOrNull($_POST['LANGCERT_WRITE'] ?? null);
+$LANGCERT_SPEAK = decimalOrNull($_POST['LANGCERT_SPEAK'] ?? null);
+$LANGCERT_LISTEN = decimalOrNull($_POST['LANGCERT_LISTEN'] ?? null);
+
+$DULINGO_OA = decimalOrNull($_POST['DULINGO_OA'] ?? null);
+$DULINGO_READ = decimalOrNull($_POST['DULINGO_READ'] ?? null);
+$DULINGO_WRITE = decimalOrNull($_POST['DULINGO_WRITE'] ?? null);
+$DULINGO_SPEAK = decimalOrNull($_POST['DULINGO_SPEAK'] ?? null);
+$DULINGO_LISTEN = decimalOrNull($_POST['DULINGO_LISTEN'] ?? null);
+
+$ENGOTHER_OA = decimalOrNull($_POST['ENGOTHER_OA'] ?? null);
+$ENGOTHER_READ = decimalOrNull($_POST['ENGOTHER_READ'] ?? null);
+$ENGOTHER_WRITE = decimalOrNull($_POST['ENGOTHER_WRITE'] ?? null);
+$ENGOTHER_SPEAK = decimalOrNull($_POST['ENGOTHER_SPEAK'] ?? null);
+$ENGOTHER_LISTEN = decimalOrNull($_POST['ENGOTHER_LISTEN'] ?? null);
+
+$GRE_OA = decimalOrNull($_POST['GRE_OA'] ?? null);
+$SAT_OA = decimalOrNull($_POST['SAT_OA'] ?? null);
+$GMAT_OA = decimalOrNull($_POST['GMAT_OA'] ?? null);
+
+$APTOTHER_OA = decimalOrNull($_POST['APTOTHER_OA'] ?? null);
+$ENGOTHER_NAME = nullIfEmpty($_POST['ENGOTHER_NAME'] ?? null);
+$APTOTHER_NAME = nullIfEmpty($_POST['APTOTHER_NAME'] ?? null);
+	
 $stmt->bind_param("ssssssssssssssssssssssssssssssssssssssssssssssss",
 $Country_code,
-$_POST['IELTS_OA'],$_POST['IELTS_READ'],$_POST['IELTS_WRITE'],$_POST['IELTS_SPEAK'],$_POST['IELTS_LISTEN'],
-$_POST['PTE_OA'],$_POST['PTE_READ'],$_POST['PTE_WRITE'],$_POST['PTE_SPEAK'],$_POST['PTE_LISTEN'],
-$_POST['TOEFL_OA'],$_POST['TOEFL_READ'],$_POST['TOEFL_WRITE'],$_POST['TOEFL_SPEAK'],$_POST['TOEFL_LISTEN'],
-$_POST['LANGCERT_OA'],$_POST['LANGCERT_READ'],$_POST['LANGCERT_WRITE'],$_POST['LANGCERT_SPEAK'],$_POST['LANGCERT_LISTEN'],
-$_POST['DULINGO_OA'],$_POST['DULINGO_READ'],$_POST['DULINGO_WRITE'],$_POST['DULINGO_SPEAK'],$_POST['DULINGO_LISTEN'],
-$_POST['ENGOTHER_OA'],$_POST['ENGOTHER_READ'],$_POST['ENGOTHER_WRITE'],$_POST['ENGOTHER_SPEAK'],$_POST['ENGOTHER_LISTEN'],$_POST['ENGOTHER_NAME'],
-$_POST['GRE_OA'],$_POST['SAT_OA'],$_POST['GMAT_OA'],$_POST['APTOTHER_NAME'],$_POST['APTOTHER_OA'],
+$IELTS_OA,$IELTS_READ,$IELTS_WRITE,$IELTS_SPEAK,$IELTS_LISTEN,
+$PTE_OA,$PTE_READ,$PTE_WRITE,$PTE_SPEAK,$PTE_LISTEN,
+$TOEFL_OA,$TOEFL_READ,$TOEFL_WRITE,$TOEFL_SPEAK,$TOEFL_LISTEN,
+$LANGCERT_OA,$LANGCERT_READ,$LANGCERT_WRITE,$LANGCERT_SPEAK,$LANGCERT_LISTEN,
+$DULINGO_OA,$DULINGO_READ,$DULINGO_WRITE,$DULINGO_SPEAK,$DULINGO_LISTEN,
+$ENGOTHER_OA,$ENGOTHER_READ,$ENGOTHER_WRITE,$ENGOTHER_SPEAK,$ENGOTHER_LISTEN,$ENGOTHER_NAME,
+$GRE_OA,$SAT_OA,$GMAT_OA,$APTOTHER_NAME,$APTOTHER_OA,
 
 $ENGOTHER_UPLOAD,
 $APTOTHER_UPLOAD,
