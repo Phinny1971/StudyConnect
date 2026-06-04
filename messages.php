@@ -273,6 +273,34 @@ loadMessages();
 
 </div>
 
-	
+<script>
+
+function openDocument(filePath)
+{
+    let ext = filePath.split('.').pop().toLowerCase();
+
+    if(
+        ext === 'pdf' ||
+        ext === 'jpg' ||
+        ext === 'jpeg' ||
+        ext === 'png'
+    )
+    {
+        $("#docFrame").attr("src", filePath);
+        $("#docModal").show();
+    }
+    else
+    {
+        window.open(filePath, "_blank");
+    }
+}
+
+function closeDocument()
+{
+    $("#docFrame").attr("src", "");
+    $("#docModal").hide();
+}
+
+</script>	
 </body>
 </html>
