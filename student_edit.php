@@ -1833,7 +1833,7 @@ function closeMsgModal() {
         <div class="modal-body">
             <iframe id="messageFrame"
                     width="100%"
-                    height="500"
+                    height="80%"
                     frameborder="0">
             </iframe>
         </div>
