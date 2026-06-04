@@ -217,5 +217,62 @@ loadMessages();
 
 </script>
 
+
+<div id="docModal"
+     style="
+     display:none;
+     position:fixed;
+     top:0;
+     left:0;
+     width:100%;
+     height:100%;
+     background:rgba(0,0,0,0.7);
+     z-index:9999;">
+
+    <div style="
+         position:absolute;
+         top:5%;
+         left:5%;
+         width:90%;
+         height:90%;
+         background:white;
+         border-radius:10px;
+         overflow:hidden;">
+
+        <div style="
+             background:#1e3a5f;
+             color:white;
+             padding:10px;
+             font-weight:bold;">
+
+            Document Preview
+
+            <button
+                onclick="closeDocument()"
+                style="
+                float:right;
+                background:red;
+                color:white;
+                border:none;
+                padding:5px 10px;
+                cursor:pointer;">
+                Close
+            </button>
+
+        </div>
+
+        <iframe
+            id="docFrame"
+            style="
+            width:100%;
+            height:calc(100% - 45px);
+            border:none;">
+        </iframe>
+
+    </div>
+
+</div>
+
+	
 </body>
 </html>
