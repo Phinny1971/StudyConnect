@@ -2,11 +2,13 @@
 
 session_start();
 
+
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+
 
 /*
 $host = "localhost";
@@ -225,6 +227,94 @@ a:hover{
     text-decoration:underline;
 }
 
+.doc-badge{
+    display:inline-block;
+    background:#e3f2fd;
+    color:#1565c0;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.doc-actions{
+    margin-top:10px;
+    padding-top:8px;
+    border-top:1px solid #eee;
+}
+
+.doc-actions a{
+    margin-right:12px;
+    font-size:13px;
+    font-weight:600;
+}
+
+/* PAYMENT TOGGLE */
+
+.payment-container{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.switch{
+    position:relative;
+    display:inline-block;
+    width:40px;
+    height:22px;
+}
+
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.slider{
+    position:absolute;
+    cursor:pointer;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:#ccc;
+    transition:.3s;
+    border-radius:22px;
+}
+
+.slider:before{
+    position:absolute;
+    content:"";
+    height:16px;
+    width:16px;
+    left:3px;
+    bottom:3px;
+    background:white;
+    transition:.3s;
+    border-radius:50%;
+}
+
+.switch input:checked + .slider{
+    background:#28a745;
+}
+
+.switch input:checked + .slider:before{
+    transform:translateX(18px);
+}
+
+.payment-status{
+    font-size:11px;
+    font-weight:600;
+}
+
+.payment-status.paid{
+    color:#28a745;
+}
+
+.payment-status.unpaid{
+    color:#888;
+}
 </style>
 
 </head>
@@ -300,9 +390,15 @@ a:hover{
         🌍 <?= htmlspecialchars($row['COUNTRY_CODE']) ?>
     </div>
 
-    <?php if(!empty($row['Course_URL'])) { ?>
+<div style="
+    margin-top:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;">
 
-        <div style="margin-top:8px;">
+    <div>
+
+        <?php if(!empty($row['Course_URL'])) { ?>
 
             <a href="<?= htmlspecialchars($row['Course_URL']) ?>"
                target="_blank"
@@ -312,9 +408,42 @@ a:hover{
 
             </a>
 
-        </div>
+        <?php } ?>
 
-    <?php } ?>
+    </div>
+
+    <div class="payment-container">
+
+        <label class="switch">
+
+            <input
+                type="checkbox"
+                <?= ($row['Payment_Status'] == 1 ? 'checked' : '') ?>
+
+                onclick="
+                    event.stopPropagation();
+
+                    togglePaymentStatus(
+                        <?= $row['student_id'] ?>,
+                        '<?= addslashes($row['University_Name']) ?>',
+                        this
+                    );
+                ">
+
+            <span class="slider"></span>
+
+        </label>
+
+        <span
+			class="payment-status <?= ($row['Payment_Status'] == 1 ? 'paid' : 'unpaid') ?>">
+			<?= ($row['Payment_Status'] == 1 ? 'Paid' : 'Unpaid') ?>
+		</span>
+		
+		
+
+    </div>
+
+</div>
 
 </div>
 
@@ -343,7 +472,8 @@ a:hover{
 
         <div class="message-form">
 
-            <form id="messageForm">
+           <!-- <form id="messageForm"> -->
+		   <form id="messageForm" enctype="multipart/form-data">
 
                 <input type="hidden"
                        name="student_id"
@@ -352,6 +482,47 @@ a:hover{
                 <input type="hidden"
                        name="university"
                        id="hiddenUniversity">
+
+				<div style="display:flex; gap:15px; margin-bottom:12px;">
+
+				<div style="flex:1;">
+
+					<label><b>Your Docs (SOPs)</b></label><br>
+
+					<input type="file"
+						   name="your_docs"
+						   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+						   style="margin-top:5px; width:100%;">
+
+					</div>
+
+					<div style="flex:1;">
+
+						<label><b>HO Docs</b></label><br>
+
+					<input type="file"
+					   name="ho_docs"
+					   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+					   style="margin-top:5px; width:100%;">
+
+					</div>
+
+				</div>
+
+				<div style="margin-bottom:12px;">
+
+					<label><b>Payment Link</b></label><br>
+
+					<input type="url"
+						   name="payment_link"
+						   placeholder="Paste payment URL here"
+						   style="width:100%;
+								  padding:8px;
+								  border:1px solid #ccc;
+								  border-radius:6px;
+								  margin-top:5px;">
+
+				</div>
 
                 <textarea
                     name="message"
@@ -449,15 +620,19 @@ function fetchMessages(){
 
             $("#messages").html(data);
 
-            $("#messages").scrollTop(
+         /*   $("#messages").scrollTop(
                 $("#messages")[0].scrollHeight
             );
+		*/
+		
         }
+		
+		
     });
 }
 
 /* SEND MESSAGE */
-
+/*
 $("#messageForm").submit(function(e){
 
     e.preventDefault();
@@ -500,6 +675,135 @@ let newMsg =
         }
     });
 });
+*/
+
+$("#messageForm").submit(function(e){
+
+    e.preventDefault();
+
+    if(currentUniversity === ""){
+
+        alert("Please select an application first");
+        return;
+    }
+
+    let messageText =
+        $('textarea[name="message"]').val();
+
+    let formData = new FormData(this);
+
+    $.ajax({
+
+        url:"insert_message.php",
+
+        method:"POST",
+
+        data: formData,
+
+        processData:false,
+
+        contentType:false,
+
+    /*    success:function(){
+
+            let newMsg =
+                '<div class="msg">' +
+                    '<div class="meta">' +
+                        'You | Just now' +
+                    '</div>' +
+                    '<div>' + messageText + '</div>' +
+                '</div>';
+
+            $("#messages").append(newMsg);
+
+            $("#messageForm")[0].reset();
+
+            $("#messages").scrollTop(
+                $("#messages")[0].scrollHeight
+            );
+
+        }
+	*/
+	
+		success:function(){
+
+			$("#messageForm")[0].reset();
+
+			fetchMessages();
+		}
+    });
+});
+
+function openDocument(filePath)
+{
+    let ext =
+        filePath.split('.').pop().toLowerCase();
+
+    if(
+        ext === 'pdf' ||
+        ext === 'jpg' ||
+        ext === 'jpeg' ||
+        ext === 'png'
+    )
+    {
+        $("#docFrame").attr("src", filePath);
+
+        $("#docModal").show();
+    }
+    else
+    {
+        window.open(filePath, "_blank");
+    }
+}
+
+function closeDocument()
+{
+    $("#docFrame").attr("src", "");
+    $("#docModal").hide();
+}
+
+function togglePaymentStatus(studentId, university, checkbox)
+{
+    let paymentStatus =
+        checkbox.checked ? 1 : 0;
+
+    let statusText =
+        $(checkbox)
+        .closest(".payment-container")
+        .find(".payment-status");
+
+    $.ajax({
+
+        url:"update_payment_status.php",
+
+        method:"POST",
+
+        data:{
+            student_id:studentId,
+            university:university,
+            payment_status:paymentStatus
+        },
+
+        success:function()
+        {
+            if(paymentStatus)
+            {
+                statusText
+                    .text("Paid")
+                    .removeClass("unpaid")
+                    .addClass("paid");
+            }
+            else
+            {
+                statusText
+                    .text("Unpaid")
+                    .removeClass("paid")
+                    .addClass("unpaid");
+            }
+        }
+    });
+}
+
 
 /* AUTO REFRESH */
 
@@ -507,5 +811,60 @@ setInterval(fetchMessages, 5000);
 
 </script>
 
+
+<div id="docModal"
+     style="
+     display:none;
+     position:fixed;
+     top:0;
+     left:0;
+     width:100%;
+     height:100%;
+     background:rgba(0,0,0,0.7);
+     z-index:9999;">
+
+    <div style="
+         position:absolute;
+         top:5%;
+         left:5%;
+         width:90%;
+         height:90%;
+         background:white;
+         border-radius:10px;
+         overflow:hidden;">
+
+        <div style="
+             background:#1e3a5f;
+             color:white;
+             padding:10px;
+             font-weight:bold;">
+
+            Document Preview
+
+            <button
+                onclick="closeDocument()"
+                style="
+                float:right;
+                background:red;
+                color:white;
+                border:none;
+                padding:5px 10px;
+                cursor:pointer;">
+                Close
+            </button>
+
+        </div>
+
+        <iframe
+            id="docFrame"
+            style="
+            width:100%;
+            height:calc(100% - 45px);
+            border:none;">
+        </iframe>
+
+    </div>
+
+</div>
 </body>
 </html>

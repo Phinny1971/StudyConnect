@@ -53,6 +53,16 @@ if (!$result || $result->num_rows === 0) {
 }
 $coursechoice = $result->fetch_assoc();
 
+// Fetch studentotherdetails
+$sql = "SELECT * FROM studentotherdetails WHERE student_id = $student_id";
+$result = $conn->query($sql);
+
+if (!$result || $result->num_rows === 0) {
+    $studentotherdetails = [];
+} else {
+    $studentotherdetails = $result->fetch_assoc();
+}
+
 
 // Fetch countries
 $sql = "SELECT country_name FROM countries";
@@ -397,6 +407,59 @@ $conn->close();
 	  </td>
      </tr>
 	  
+	 <tr>
+	 <td><label>Gender:</label></td>
+        <td>
+        <select name="gender" id="gender">
+			<?php
+			$genders = [
+				"Male",
+				"Female",
+				"Transgender",
+				"Non-binary/non-conforming",
+				"Prefer not to respond"
+			];
+
+			echo '<option value="">Select Gender</option>';
+
+			foreach ($genders as $gender) {
+				$selected = ($studentotherdetails['gender'] == $gender) ? 'selected' : '';
+				echo "<option value=\"$gender\" $selected>$gender</option>";
+			}
+			?>
+		</select>
+		</td>
+	  
+        <td style="width:50px;"></td>
+	     <td><label>Marital Status:</label></td>
+        <td>
+		   <select name="maritalstatus" id="maritalstatus">
+			<?php
+			$statuses = [
+				"Single",
+				"Married",
+				"Divorced",
+				"Widowed",
+				"Separated",
+				"Prefer not to say"
+			];
+
+			echo '<option value="">Select Status</option>';
+
+			foreach ($statuses as $status) {
+				$selected = (($studentotherdetails['maritalstatus'] ?? '') == $status)
+					? 'selected'
+					: '';
+
+				echo "<option value=\"$status\" $selected>$status</option>";
+			}
+			?>
+			</select>
+		</td>
+	  
+     </tr>
+	 
+	  
 	  <tr>
 	  <td></td>
       <td></td>
@@ -406,6 +469,73 @@ $conn->close();
 	 
 	  </table>
     </div>
+	
+		  <h3>Emergency Contacts</h3>
+		 <div class="edu-section">
+		<table>
+		 <tr> 
+		 <td><label>Name: </label></td><td style="width:50px;"></td><td > 
+		 <input type="text" name="emergency_name" id="emergency_name"  maxlength="50" 
+			value="<?php echo htmlspecialchars($studentotherdetails['emergency_name'] ?? ''); ?>" > 
+		 </td>
+		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Emergency Phone: </label></td>	 
+		  <td > 
+		  <input type="text" name="emergency_phone" id="emergency_phone"  pattern="[0-9]{10}" title="Enter 10 digit phone number" 
+		  value="<?php echo htmlspecialchars($studentotherdetails['emergency_phone'] ?? ''); ?>"> 
+		  </td>
+		 <td ></td>
+		 <td ></td>
+		 </tr>
+		 
+		  <tr> 
+		 <td><label>Email: </label></td><td style="width:50px;"></td><td > 
+		 <input  type="text" name="emergency_email" id="emergency_email"  maxlength="50" value="<?php echo htmlspecialchars($studentotherdetails['emergency_email'] ?? ''); ?>"> 
+		 </td>
+		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Relationship: </label></td>	 
+		  <td > 
+		  <input  type="text" name="emergency_relation" id="emergency_relation"  maxlength="50" value="<?php echo htmlspecialchars($studentotherdetails['emergency_relation'] ?? ''); ?>"> 
+		  </td>
+		 <td ></td>
+		 <td ></td>
+		 </tr>
+		 
+		 </table>
+		 </div>
+
+	 	  <h3>Background Information</h3>
+		 <div class="edu-section">
+		<table>
+		 <tr> 
+		 <td><label>Has the applicant applied for any type of immigration into any country? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="immi_country" id="immi_country"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['immi_country'] ?? ''); ?>"> </td>
+		 </tr>
+		 
+		<tr> 
+		 <td><label>Does applicant suffer from any serious medical condition? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="medical_cond" id="medical_cond"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['medical_cond'] ?? ''); ?>" > </td>
+		 </tr>
+
+		<tr> 
+		 <td><label>Has applicant Visa refusal for any country? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="visa_refusal" id="visa_refusal"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['visa_refusal'] ?? ''); ?>" > </td>
+		 </tr>
+		 
+		<tr> 
+		 <td><label>Has applicant ever been convicted of a criminal offence? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="convicted_offence" id="convicted_offence"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['convicted_offence'] ?? ''); ?>" > </td>
+		 </tr>
+		 
+		 </table>
+		 </div>
+	
 	</div>
 
     <!-- Tab 2 -->
@@ -501,7 +631,8 @@ $conn->close();
 			  
 			  <tr><td><label>Other Marks (%):</label></td><td><input type="number" name="marks_other" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_other']); ?>"></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_Other')">
+			  <td>
+			  <input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_Other')">
 			  <input type="hidden" name="existing_cert_other" value="<?php echo htmlspecialchars($student['cert_other'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -515,6 +646,127 @@ $conn->close();
 			  </td>
 			   <td><div id="preview_Other" class="preview-text"></div></td>
 			  </tr>
+			  
+				<tr>
+				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor1')">
+				 <input type="hidden" name="existing_lor1" value="<?php echo htmlspecialchars($studentotherdetails['lor1'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['lor1'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['lor1']); ?>, 'preview_lor1');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_lor1" class="preview-text"></div></td>
+				</tr>
+				
+				<tr>
+				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor2')">
+				 <input type="hidden" name="existing_lor2" value="<?php echo htmlspecialchars($studentotherdetails['lor2'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['lor2'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['lor2']); ?>, 'preview_lor2');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_lor2" class="preview-text"></div></td>
+				</tr>
+				
+				<tr>
+				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor3')">
+				 <input type="hidden" name="existing_lor3" value="<?php echo htmlspecialchars($studentotherdetails['lor3'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['lor3'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['lor3']); ?>, 'preview_lor3');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_lor3" class="preview-text"></div></td>
+				</tr>
+				
+				<tr>
+				<td><label>Medium of Instruction (MOI):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="moi" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_moi')">
+				 <input type="hidden" name="existing_moi" value="<?php echo htmlspecialchars($studentotherdetails['moi'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['moi'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['moi']); ?>, 'preview_moi');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_moi" class="preview-text"></div></td>
+				</tr>
+			
+				<tr>
+				<td><label>CV / Resume:</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="resume" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_resume')">
+				 <input type="hidden" name="existing_resume" value="<?php echo htmlspecialchars($studentotherdetails['resume'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['resume'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['resume']); ?>, 'preview_resume');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_resume" class="preview-text"></div></td>
+				</tr>
+				
+				<tr>
+				<td><label>Other documents (if any):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_otherdoc')">
+				 <input type="hidden" name="existing_otherdoc" value="<?php echo htmlspecialchars($studentotherdetails['otherdoc'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['otherdoc'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['otherdoc']); ?>, 'preview_otherdoc');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_otherdoc" class="preview-text"></div></td>
+				</tr>
+				
 		  </table>
 	  
       </div>

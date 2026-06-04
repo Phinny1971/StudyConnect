@@ -21,6 +21,7 @@ function dateOrNull($value) {
         : $value;
 }
 
+
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
@@ -260,6 +261,9 @@ $stmt->close();
 // ================= UPDATE LANG TABLE =================
 updateLangApt($conn, $student_id, $Country_code);
 
+//==============STUDENT OTHER DETAILS============
+saveOtherDetails($conn, $student_id, $Country_code);
+
 // ================= COURSE CHOICE =================
 $courses = json_decode($_POST['courses'], true);
 saveCourseChoices($conn, $student_id, $Country_code, $courses);
@@ -487,4 +491,116 @@ function saveCourseChoices($conn, $student_id, $Country_code, $courses) {
 
     $stmtInsert->close();
 }
+
+function getUploadedFileOrExisting($fieldName)
+{
+    $file = uploadFile($fieldName);
+
+    if (!empty($file)) {
+        return $file;
+    }
+
+    return $_POST['existing_' . $fieldName] ?? null;
+}
+
+function saveOtherDetails($conn, $student_id, $Country_code)
+{
+	
+	// Delete existing records
+    $stmtDelete = $conn->prepare(
+        "DELETE FROM studentotherdetails WHERE student_id = ?"
+    );
+
+    $stmtDelete->bind_param("i", $student_id);
+    $stmtDelete->execute();
+    $stmtDelete->close();
+
+    // Insert updated records
+	
+    $immi_country       = nullIfEmpty($_POST['immi_country'] ?? null);
+    $medical_cond       = nullIfEmpty($_POST['medical_cond'] ?? null);
+    $visa_refusal       = nullIfEmpty($_POST['visa_refusal'] ?? null);
+    $convicted_offence  = nullIfEmpty($_POST['convicted_offence'] ?? null);
+
+    $emergency_name      = nullIfEmpty($_POST['emergency_name'] ?? null);
+    $emergency_phone     = nullIfEmpty($_POST['emergency_phone'] ?? null);
+    $emergency_email     = nullIfEmpty($_POST['emergency_email'] ?? null);
+    $emergency_relation  = nullIfEmpty($_POST['emergency_relation'] ?? null);
+
+    $gender          = nullIfEmpty($_POST['gender'] ?? null);
+    $maritalstatus   = nullIfEmpty($_POST['maritalstatus'] ?? null);
+/*
+    $lor1      = nullIfEmpty(uploadFile('lor1'));
+    $lor2      = nullIfEmpty(uploadFile('lor2'));
+    $lor3      = nullIfEmpty(uploadFile('lor3'));
+    $moi       = nullIfEmpty(uploadFile('moi'));
+    $resume    = nullIfEmpty(uploadFile('resume'));
+    $otherdoc  = nullIfEmpty(uploadFile('otherdoc'));
+*/	
+	$lor1     = getUploadedFileOrExisting('lor1');
+	$lor2     = getUploadedFileOrExisting('lor2');
+	$lor3     = getUploadedFileOrExisting('lor3');
+	$moi      = getUploadedFileOrExisting('moi');
+	$resume   = getUploadedFileOrExisting('resume');
+	$otherdoc = getUploadedFileOrExisting('otherdoc');
+
+    $sql = "
+    INSERT INTO studentotherdetails
+    (
+        student_id,
+        Country_code,
+        immi_country,
+        medical_cond,
+        visa_refusal,
+        convicted_offence,
+        emergency_name,
+        emergency_phone,
+        emergency_email,
+        emergency_relation,
+        lor1,
+        lor2,
+        lor3,
+        moi,
+        resume,
+        otherdoc,
+        gender,
+        maritalstatus
+    )
+    VALUES
+    (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    )";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param(
+        "isssssssssssssssss",
+        $student_id,
+        $Country_code,
+        $immi_country,
+        $medical_cond,
+        $visa_refusal,
+        $convicted_offence,
+        $emergency_name,
+        $emergency_phone,
+        $emergency_email,
+        $emergency_relation,
+        $lor1,
+        $lor2,
+        $lor3,
+        $moi,
+        $resume,
+        $otherdoc,
+        $gender,
+        $maritalstatus
+    );
+
+    if (!$stmt->execute()) {
+        echo "Error saving studentotherdetails: " . $stmt->error;
+    }
+
+    $stmt->close();
+}
+
+
 ?>

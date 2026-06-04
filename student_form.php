@@ -15,11 +15,13 @@ if (!isset($_SESSION["user_id"])) {
     exit();
 }
  */
+
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+
 
 /*
 $host = "localhost";
@@ -300,6 +302,36 @@ td {
 	  </td>
      </tr>
 	  
+	   <tr>
+	   <td><label>Gender:</label></td>
+        <td>
+        <select name="gender" id="gender"   >
+          <option value="">Select Gender</option>
+ 			<option value="Male">Male </option>
+			<option value="Female">Female </option>
+			<option value="Transgender"> Transgender </option>
+			<option value="Non-binary/non-conforming">Non-binary/non-conforming </option>
+			<option value="Prefer not to respond">Prefer not to respond </option>
+        </select>
+	  </td>
+        <td style="width:50px;"></td>
+	     <td><label>Marital Status:</label></td>
+        <td>
+        <select name="maritalstatus" id="maritalstatus"   >
+          <option value="">Select Status</option>
+ 			<option value="Single">Single </option>
+			<option value="Married">Married </option>
+			<option value="Divorced"> Divorced </option>
+			<option value="Widowed">Widowed </option>
+			<option value="Separated">Separated </option>
+			<option value="Prefer not to say">Prefer not to say </option>
+        </select>
+	  </td>
+	  
+     </tr>
+	 
+	
+	  
 	  <tr>
 	  <td></td>
       <td></td>
@@ -309,6 +341,65 @@ td {
 	 
 	  </table>
     </div>
+	
+	
+	  <h3>Emergency Contacts</h3>
+		 <div class="edu-section">
+		<table>
+		 <tr> 
+		 <td><label>Name: </label></td><td style="width:50px;"></td><td > <input  type="text" name="emergency_name" id="emergency_name"  maxlength="50"> </td>
+		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Emergency Phone: </label></td>	 
+		  <td > <input type="text" name="emergency_phone" id="emergency_phone"  pattern="[0-9]{10}" title="Enter 10 digit phone number"> </td>
+		 <td ></td>
+		 <td ></td>
+		 </tr>
+		 
+		  <tr> 
+		 <td><label>Email: </label></td><td style="width:50px;"></td><td > <input  type="text" name="emergency_email" id="emergency_email"  maxlength="50"> </td>
+		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Relationship: </label></td>	 
+		  <td > <input  type="text" name="emergency_relation" id="emergency_relation"  maxlength="50"> </td>
+		 <td ></td>
+		 <td ></td>
+		 </tr>
+		 
+		 </table>
+		 </div>
+
+	 	  <h3>Background Information</h3>
+		 <div class="edu-section">
+		<table>
+		 <tr> 
+		 <td><label>Has the applicant applied for any type of immigration into any country? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="immi_country" id="immi_country"  maxlength="500"> </td>
+		 </tr>
+		 
+		<tr> 
+		 <td><label>Does applicant suffer from any serious medical condition? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="medical_cond" id="medical_cond"  maxlength="500"> </td>
+		 </tr>
+
+		<tr> 
+		 <td><label>Has applicant Visa refusal for any country? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="visa_refusal" id="visa_refusal"  maxlength="500"> </td>
+		 </tr>
+		 
+		<tr> 
+		 <td><label>Has applicant ever been convicted of a criminal offence? (If Yes, Please provide details): </label></td>
+		 </tr>
+		 <tr>
+		 <td > <input  type="text" name="convicted_offence" id="convicted_offence"  maxlength="500"> </td>
+		 </tr>
+		 
+		 </table>
+		 </div>
+		 
+	  
 	</div>
 
     <!-- Tab 2 -->
@@ -352,9 +443,62 @@ td {
 			  <td><input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_Other')"></td>
 			   <td><div id="preview_Other" class="preview-text"></div></td>
 			  </tr>
-		  </table>
+		
+		
+			<tr>
+				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor1')"></td>
+				<td><div id="preview_lor1" class="preview-text"></div></td>
+			</tr>
+
+			<tr>
+				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor2')"></td>
+				<td><div id="preview_lor2" class="preview-text"></div></td>
+			</tr>
+			
+			<tr>
+				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor3')"></td>
+				<td><div id="preview_lor3" class="preview-text"></div></td>
+			</tr>
+			
+			<tr>
+				<td><label>Medium of Instruction (MOI):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="moi" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_moi')"></td>
+				<td><div id="preview_moi" class="preview-text"></div></td>
+			</tr>	
+
+			<tr>
+				<td><label>CV / Resume:</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="resume" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_resume')"></td>
+				<td><div id="preview_resume" class="preview-text"></div></td>
+			</tr>	
+
+			<tr>
+				<td><label>Other documents (if any):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_otherdoc')"></td>
+				<td><div id="preview_otherdoc" class="preview-text"></div></td>
+			</tr>	
+
+			</table> 
 	  
       </div>
+	  
+
+	  
     </div>
 
  <!-- Tab 3 -->

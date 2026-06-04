@@ -75,6 +75,7 @@ function closeMsgModal() {
 </script>
 
 <?php
+
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
@@ -278,6 +279,7 @@ if ($stmt->execute()) {
 	$last_id = mysqli_insert_id($conn);
   //echo "Student details saved successfully!";
   saveLangAptTest($conn, $last_id, $Country_code);
+  saveOtherDetails($conn, $last_id, $Country_code);
   saveCourseChoices($conn, $last_id, $Country_code, $courses);
  //echo "<script type='text/javascript'>alert('Student details saved successfully!. Student Id : " . $Country_code . $last_id . "');  </script>";
  
@@ -548,6 +550,87 @@ function saveCourseChoices($conn, $student_id, $Country_code, $coursesJson) {
         return false;
     }
 }
+
+function saveOtherDetails($conn, $student_id, $Country_code)
+{
+    $immi_country       = nullIfEmpty($_POST['immi_country'] ?? null);
+    $medical_cond       = nullIfEmpty($_POST['medical_cond'] ?? null);
+    $visa_refusal       = nullIfEmpty($_POST['visa_refusal'] ?? null);
+    $convicted_offence  = nullIfEmpty($_POST['convicted_offence'] ?? null);
+
+    $emergency_name      = nullIfEmpty($_POST['emergency_name'] ?? null);
+    $emergency_phone     = nullIfEmpty($_POST['emergency_phone'] ?? null);
+    $emergency_email     = nullIfEmpty($_POST['emergency_email'] ?? null);
+    $emergency_relation  = nullIfEmpty($_POST['emergency_relation'] ?? null);
+
+    $gender          = nullIfEmpty($_POST['gender'] ?? null);
+    $maritalstatus   = nullIfEmpty($_POST['maritalstatus'] ?? null);
+
+    $lor1      = nullIfEmpty(uploadFile('lor1'));
+    $lor2      = nullIfEmpty(uploadFile('lor2'));
+    $lor3      = nullIfEmpty(uploadFile('lor3'));
+    $moi       = nullIfEmpty(uploadFile('moi'));
+    $resume    = nullIfEmpty(uploadFile('resume'));
+    $otherdoc  = nullIfEmpty(uploadFile('otherdoc'));
+
+    $sql = "
+    INSERT INTO studentotherdetails
+    (
+        student_id,
+        Country_code,
+        immi_country,
+        medical_cond,
+        visa_refusal,
+        convicted_offence,
+        emergency_name,
+        emergency_phone,
+        emergency_email,
+        emergency_relation,
+        lor1,
+        lor2,
+        lor3,
+        moi,
+        resume,
+        otherdoc,
+        gender,
+        maritalstatus
+    )
+    VALUES
+    (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    )";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param(
+        "isssssssssssssssss",
+        $student_id,
+        $Country_code,
+        $immi_country,
+        $medical_cond,
+        $visa_refusal,
+        $convicted_offence,
+        $emergency_name,
+        $emergency_phone,
+        $emergency_email,
+        $emergency_relation,
+        $lor1,
+        $lor2,
+        $lor3,
+        $moi,
+        $resume,
+        $otherdoc,
+        $gender,
+        $maritalstatus
+    );
+
+    if (!$stmt->execute()) {
+        echo "Error saving studentotherdetails: " . $stmt->error;
+    }
+
+    $stmt->close();
+}
+
 
 ?>
 
