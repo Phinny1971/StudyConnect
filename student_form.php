@@ -373,6 +373,9 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="immi_country" id="immi_country"  maxlength="500"> </td>
+		 <td><input type="file" name="immi_country_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_immi_country')" ></td>
+			   <td><div id="preview_immi_country" class="preview-text"></div></td>
+			   
 		 </tr>
 		 
 		<tr> 
@@ -380,6 +383,8 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="medical_cond" id="medical_cond"  maxlength="500"> </td>
+		 <td><input type="file" name="medical_cond_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_medical_cond')" ></td>
+			   <td><div id="preview_medical_cond" class="preview-text"></div></td>
 		 </tr>
 
 		<tr> 
@@ -387,6 +392,8 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="visa_refusal" id="visa_refusal"  maxlength="500"> </td>
+		 <td><input type="file" name="visa_refusal_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_visa_refusal')" ></td>
+			   <td><div id="preview_visa_refusal" class="preview-text"></div></td>
 		 </tr>
 		 
 		<tr> 
@@ -394,6 +401,8 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="convicted_offence" id="convicted_offence"  maxlength="500"> </td>
+		 <td><input type="file" name="convicted_offence_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_convicted_offence')" ></td>
+			   <td><div id="preview_convicted_offence" class="preview-text"></div></td>
 		 </tr>
 		 
 		 </table>
@@ -444,31 +453,6 @@ td {
 			   <td><div id="preview_Other" class="preview-text"></div></td>
 			  </tr>
 		
-		
-			<tr>
-				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
-				<td></td>
-				<td></td>
-				<td><input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor1')"></td>
-				<td><div id="preview_lor1" class="preview-text"></div></td>
-			</tr>
-
-			<tr>
-				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
-				<td></td>
-				<td></td>
-				<td><input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor2')"></td>
-				<td><div id="preview_lor2" class="preview-text"></div></td>
-			</tr>
-			
-			<tr>
-				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
-				<td></td>
-				<td></td>
-				<td><input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor3')"></td>
-				<td><div id="preview_lor3" class="preview-text"></div></td>
-			</tr>
-			
 			<tr>
 				<td><label>Medium of Instruction (MOI):</label></td>
 				<td></td>
@@ -492,6 +476,47 @@ td {
 				<td><input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_otherdoc')"></td>
 				<td><div id="preview_otherdoc" class="preview-text"></div></td>
 			</tr>	
+			
+			<tr>
+				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor1')"></td>
+				<td><div id="preview_lor1" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor1name" id="lor1name"  maxlength="50"> </td>
+				<td><label>Email: </label></td><td><input type="email" name="lor1email" id="lor1email"  maxlength="50"></td>
+				<td><label>Phone: </label></td><td><input type="text" name="lor1phone" id="lor1phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number"></td>
+			</tr>
+
+			<tr>
+				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor2')"></td>
+				<td><div id="preview_lor2" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor2name" id="lor2name"  maxlength="50"> </td>
+				<td><label>Email: </label></td><td><input type="email" name="lor2email" id="lor2email"  maxlength="50"></td>
+				<td><label>Phone: </label></td><td><input type="text" name="lor2phone" id="lor2phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number"></td>
+			</tr>
+			
+			<tr>
+				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
+				<td></td>
+				<td></td>
+				<td><input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor3')"></td>
+				<td><div id="preview_lor3" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor3name" id="lor3name"  maxlength="50"> </td>
+				<td><label>Email: </label></td><td><input type="email" name="lor3email" id="lor3email"  maxlength="50"></td>
+				<td><label>Phone: </label></td><td><input type="text" name="lor3phone" id="lor3phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number"></td>
+			</tr>
+			
+		
 
 			</table> 
 	  
@@ -528,7 +553,41 @@ td {
 			  <td align="bottom"><div id="preview_Exp3" class="preview-text"></div></td>
 			  </tr>
 			  
-			  
+			<tr>
+				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
+				
+				<td><input type="file" name="explor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_explor1')"></td>
+				<td><div id="preview_explor1" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor1name" id="explor1name"  maxlength="50"> </td>
+				<td><label>Email: </label></td><td><input type="email" name="explor1email" id="explor1email"  maxlength="50"></td>
+				<td><label>Phone: </label></td><td><input type="text" name="explor1phone" id="explor1phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number"></td>
+			</tr>
+
+			<tr>
+				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
+				
+				<td><input type="file" name="explor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_explor2')"></td>
+				<td><div id="preview_explor2" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor2name" id="explor2name"  maxlength="50"> </td>
+				<td><label>Email: </label></td><td><input type="email" name="explor2email" id="explor2email"  maxlength="50"></td>
+				<td><label>Phone: </label></td><td><input type="text" name="explor2phone" id="explor2phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number"></td>
+			</tr>
+			
+			<tr>
+				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
+				
+				<td><input type="file" name="explor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_explor3')"></td>
+				<td><div id="preview_explor3" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor3name" id="explor3name"  maxlength="50"> </td>
+				<td><label>Email: </label></td><td><input type="email" name="explor3email" id="explor3email"  maxlength="50"></td>
+				<td><label>Phone: </label></td><td><input type="text" name="explor3phone" id="explor3phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number"></td>
+			</tr>			  
 			  
 		  </table>
 	  

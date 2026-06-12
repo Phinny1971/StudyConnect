@@ -572,6 +572,35 @@ function saveOtherDetails($conn, $student_id, $Country_code)
     $moi       = nullIfEmpty(uploadFile('moi'));
     $resume    = nullIfEmpty(uploadFile('resume'));
     $otherdoc  = nullIfEmpty(uploadFile('otherdoc'));
+	
+	$immi_country_file       = nullIfEmpty(uploadFile('immi_country_file'));
+	$medical_cond_file       = nullIfEmpty(uploadFile('medical_cond_file'));
+	$visa_refusal_file       = nullIfEmpty(uploadFile('visa_refusal_file'));
+	$convicted_offence_file  = nullIfEmpty(uploadFile('convicted_offence_file'));
+	
+	$lor1name 			= nullIfEmpty($_POST['lor1name'] ?? null);
+	$lor1email			= nullIfEmpty($_POST['lor1email'] ?? null);
+	$lor1phone			= nullIfEmpty($_POST['lor1phone'] ?? null);
+	$lor2name 			= nullIfEmpty($_POST['lor2name'] ?? null);
+	$lor2email			= nullIfEmpty($_POST['lor2email'] ?? null);
+	$lor2phone			= nullIfEmpty($_POST['lor2phone'] ?? null);
+	$lor3name 			= nullIfEmpty($_POST['lor3name'] ?? null);
+	$lor3email			= nullIfEmpty($_POST['lor3email'] ?? null);
+	$lor3phone			= nullIfEmpty($_POST['lor3phone'] ?? null);
+					
+	$explor1name 		= nullIfEmpty($_POST['explor1name'] ?? null);	
+	$explor1email		= nullIfEmpty($_POST['explor1email'] ?? null);	
+	$explor1phone		= nullIfEmpty($_POST['explor1phone'] ?? null);	
+	$explor2name 		= nullIfEmpty($_POST['explor2name'] ?? null);	
+	$explor2email		= nullIfEmpty($_POST['explor2email'] ?? null);	
+	$explor2phone		= nullIfEmpty($_POST['explor2phone'] ?? null);	
+	$explor3name 		= nullIfEmpty($_POST['explor3name'] ?? null);	
+	$explor3email		= nullIfEmpty($_POST['explor3email'] ?? null);	
+	$explor3phone		= nullIfEmpty($_POST['explor3phone'] ?? null);	
+	
+	$explor1 		=nullIfEmpty(uploadFile('explor1'));
+	$explor2 		=nullIfEmpty(uploadFile('explor2'));
+	$explor3 		=nullIfEmpty(uploadFile('explor3'));
 
     $sql = "
     INSERT INTO studentotherdetails
@@ -593,17 +622,43 @@ function saveOtherDetails($conn, $student_id, $Country_code)
         resume,
         otherdoc,
         gender,
-        maritalstatus
+        maritalstatus,
+		immi_country_file,     
+		medical_cond_file,     
+		visa_refusal_file,     
+		convicted_offence_file,
+		lor1name, 		
+		lor1email,		
+		lor1phone,		
+		lor2name, 		
+		lor2email,		
+		lor2phone,		
+		lor3name, 		
+		lor3email,		
+		lor3phone,		
+		explor1name, 	
+		explor1email,	
+		explor1phone,	
+		explor2name, 	
+		explor2email,	
+		explor2phone,	
+		explor3name, 	
+		explor3email,	
+		explor3phone,	
+		explor1, 		
+		explor2, 		
+		explor3 		
+		
     )
     VALUES
     (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
     )";
 
     $stmt = $conn->prepare($sql);
 
     $stmt->bind_param(
-        "isssssssssssssssss",
+        "issssssssssssssssssssssssssssssssssssssssss",
         $student_id,
         $Country_code,
         $immi_country,
@@ -621,7 +676,32 @@ function saveOtherDetails($conn, $student_id, $Country_code)
         $resume,
         $otherdoc,
         $gender,
-        $maritalstatus
+        $maritalstatus,
+		$immi_country_file,     
+		$medical_cond_file,     
+		$visa_refusal_file,     
+		$convicted_offence_file,
+		$lor1name, 		
+		$lor1email,		
+		$lor1phone,		
+		$lor2name, 		
+		$lor2email,		
+		$lor2phone,		
+		$lor3name, 		
+		$lor3email,		
+		$lor3phone,		
+		$explor1name, 	
+		$explor1email,	
+		$explor1phone,	
+		$explor2name, 	
+		$explor2email,	
+		$explor2phone,	
+		$explor3name, 	
+		$explor3email,	
+		$explor3phone,	
+		$explor1, 		
+		$explor2, 		
+		$explor3
     );
 
     if (!$stmt->execute()) {

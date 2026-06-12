@@ -29,6 +29,7 @@ $password = "Study@2025";
 */
 
 $conn = mysqli_connect($host, $user, $password, $database, $port);
+//$conn = new mysqli($host, $username, $password, $dbname);
 
 if ($conn->connect_error) {
   http_response_code(500);

@@ -510,6 +510,22 @@ $conn->close();
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="immi_country" id="immi_country"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['immi_country'] ?? ''); ?>"> </td>
+		 
+		 		<td>
+				<input type="file" name="immi_country_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_immi_country_file')">
+				 <input type="hidden" name="existing_immi_country_file" value="<?php echo htmlspecialchars($studentotherdetails['immi_country_file'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['immi_country_file'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['immi_country_file']); ?>, 'preview_immi_country_file');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_immi_country_file" class="preview-text"></div></td>
+				
 		 </tr>
 		 
 		<tr> 
@@ -517,6 +533,22 @@ $conn->close();
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="medical_cond" id="medical_cond"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['medical_cond'] ?? ''); ?>" > </td>
+		 
+		 		<td>
+				<input type="file" name="medical_cond_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_medical_cond_file')">
+				 <input type="hidden" name="existing_medical_cond_file" value="<?php echo htmlspecialchars($studentotherdetails['medical_cond_file'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['medical_cond_file'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['medical_cond_file']); ?>, 'preview_medical_cond_file');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_medical_cond_file" class="preview-text"></div></td>
+		 
 		 </tr>
 
 		<tr> 
@@ -524,6 +556,22 @@ $conn->close();
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="visa_refusal" id="visa_refusal"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['visa_refusal'] ?? ''); ?>" > </td>
+		 
+				<td>
+				<input type="file" name="visa_refusal_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_visa_refusal_file')">
+				 <input type="hidden" name="existing_visa_refusal_file" value="<?php echo htmlspecialchars($studentotherdetails['visa_refusal_file'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['visa_refusal_file'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['visa_refusal_file']); ?>, 'preview_visa_refusal_file');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_visa_refusal_file" class="preview-text"></div></td>
+				
 		 </tr>
 		 
 		<tr> 
@@ -531,6 +579,22 @@ $conn->close();
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="convicted_offence" id="convicted_offence"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['convicted_offence'] ?? ''); ?>" > </td>
+		 
+				<td>
+				<input type="file" name="convicted_offence_file" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_convicted_offence_file')">
+				 <input type="hidden" name="existing_convicted_offence_file" value="<?php echo htmlspecialchars($studentotherdetails['convicted_offence_file'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['convicted_offence_file'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['convicted_offence_file']); ?>, 'preview_convicted_offence_file');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_convicted_offence_file" class="preview-text"></div></td>
+				
 		 </tr>
 		 
 		 </table>
@@ -647,67 +711,7 @@ $conn->close();
 			   <td><div id="preview_Other" class="preview-text"></div></td>
 			  </tr>
 			  
-				<tr>
-				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
-				<td></td>
-				<td></td>
-				<td>
-				<input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor1')">
-				 <input type="hidden" name="existing_lor1" value="<?php echo htmlspecialchars($studentotherdetails['lor1'] ?? ''); ?>">
-				</td>
-					<td>
-					<?php if (!empty($studentotherdetails['lor1'])): ?>
-					<script>
-					  window.addEventListener('DOMContentLoaded', function() {
-						previewFile(<?php echo json_encode($studentotherdetails['lor1']); ?>, 'preview_lor1');
-					  });
-					</script>
-					<?php endif; ?>
-					</td>
-				<td><div id="preview_lor1" class="preview-text"></div></td>
-				</tr>
-				
-				<tr>
-				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
-				<td></td>
-				<td></td>
-				<td>
-				<input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor2')">
-				 <input type="hidden" name="existing_lor2" value="<?php echo htmlspecialchars($studentotherdetails['lor2'] ?? ''); ?>">
-				</td>
-					<td>
-					<?php if (!empty($studentotherdetails['lor2'])): ?>
-					<script>
-					  window.addEventListener('DOMContentLoaded', function() {
-						previewFile(<?php echo json_encode($studentotherdetails['lor2']); ?>, 'preview_lor2');
-					  });
-					</script>
-					<?php endif; ?>
-					</td>
-				<td><div id="preview_lor2" class="preview-text"></div></td>
-				</tr>
-				
-				<tr>
-				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
-				<td></td>
-				<td></td>
-				<td>
-				<input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor3')">
-				 <input type="hidden" name="existing_lor3" value="<?php echo htmlspecialchars($studentotherdetails['lor3'] ?? ''); ?>">
-				</td>
-					<td>
-					<?php if (!empty($studentotherdetails['lor3'])): ?>
-					<script>
-					  window.addEventListener('DOMContentLoaded', function() {
-						previewFile(<?php echo json_encode($studentotherdetails['lor3']); ?>, 'preview_lor3');
-					  });
-					</script>
-					<?php endif; ?>
-					</td>
-				<td><div id="preview_lor3" class="preview-text"></div></td>
-				</tr>
-				
-				<tr>
+			  	<tr>
 				<td><label>Medium of Instruction (MOI):</label></td>
 				<td></td>
 				<td></td>
@@ -766,6 +770,104 @@ $conn->close();
 					</td>
 				<td><div id="preview_otherdoc" class="preview-text"></div></td>
 				</tr>
+				
+			  
+				<tr>
+				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor1')">
+				 <input type="hidden" name="existing_lor1" value="<?php echo htmlspecialchars($studentotherdetails['lor1'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['lor1'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['lor1']); ?>, 'preview_lor1');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_lor1" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor1name" id="lor1name"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['lor1name'] ?? ''); ?>">
+				</td>
+				<td><label>Email: </label></td><td><input type="email" name="lor1email" id="lor1email"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['lor1email'] ?? ''); ?>">
+				</td>
+				<td><label>Phone: </label></td><td><input type="text" name="lor1phone" id="lor1phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number" 
+				 value="<?php echo htmlspecialchars($studentotherdetails['lor1phone'] ?? ''); ?>">
+				 </td>
+				 
+				</tr>
+				
+				<tr>
+				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor2')">
+				 <input type="hidden" name="existing_lor2" value="<?php echo htmlspecialchars($studentotherdetails['lor2'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['lor2'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['lor2']); ?>, 'preview_lor2');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_lor2" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor2name" id="lor2name"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['lor2name'] ?? ''); ?>">
+				</td>
+				<td><label>Email: </label></td><td><input type="email" name="lor2email" id="lor2email"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['lor2email'] ?? ''); ?>">
+				</td>
+				<td><label>Phone: </label></td><td><input type="text" name="lor2phone" id="lor2phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number" 
+				 value="<?php echo htmlspecialchars($studentotherdetails['lor2phone'] ?? ''); ?>">
+				 </td>
+				</tr>
+				
+				<tr>
+				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_lor3')">
+				 <input type="hidden" name="existing_lor3" value="<?php echo htmlspecialchars($studentotherdetails['lor3'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['lor3'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['lor3']); ?>, 'preview_lor3');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_lor3" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor3name" id="lor3name"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['lor3name'] ?? ''); ?>">
+				</td>
+				<td><label>Email: </label></td><td><input type="email" name="lor3email" id="lor3email"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['lor3email'] ?? ''); ?>">
+				</td>
+				<td><label>Phone: </label></td><td><input type="text" name="lor3phone" id="lor3phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number" 
+				 value="<?php echo htmlspecialchars($studentotherdetails['lor3phone'] ?? ''); ?>">
+				 </td>
+				
+				</tr>
+				
+			
 				
 		  </table>
 	  
@@ -832,8 +934,102 @@ $conn->close();
 			  <td align="bottom"><div id="preview_Exp3" class="preview-text"></div></td>
 			  </tr>
 			  
-			  </tr>
+			  <tr>
+				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="explor1" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_explor1')">
+				 <input type="hidden" name="existing_explor1" value="<?php echo htmlspecialchars($studentotherdetails['explor1'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['explor1'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['explor1']); ?>, 'preview_explor1');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_explor1" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor1name" id="explor1name"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['explor1name'] ?? ''); ?>">
+				</td>
+				<td><label>Email: </label></td><td><input type="email" name="explor1email" id="explor1email"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['explor1email'] ?? ''); ?>">
+				</td>
+				<td><label>Phone: </label></td><td><input type="text" name="explor1phone" id="explor1phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number" 
+				 value="<?php echo htmlspecialchars($studentotherdetails['explor1phone'] ?? ''); ?>">
+				 </td>
+				 
+				</tr>
 			  
+			   <tr>
+				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="explor2" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_explor2')">
+				 <input type="hidden" name="existing_explor2" value="<?php echo htmlspecialchars($studentotherdetails['explor2'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['explor2'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['explor2']); ?>, 'preview_explor2');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_explor2" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor2name" id="explor2name"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['explor2name'] ?? ''); ?>">
+				</td>
+				<td><label>Email: </label></td><td><input type="email" name="explor2email" id="explor2email"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['explor2email'] ?? ''); ?>">
+				</td>
+				<td><label>Phone: </label></td><td><input type="text" name="explor2phone" id="explor2phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number" 
+				 value="<?php echo htmlspecialchars($studentotherdetails['explor2phone'] ?? ''); ?>">
+				 </td>
+				 
+				</tr>
+				
+				<tr>
+				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
+				<td></td>
+				<td></td>
+				<td>
+				<input type="file" name="explor3" accept=".jpg,.jpeg,.png,.pdf" onchange="previewFile(this, 'preview_explor3')">
+				 <input type="hidden" name="existing_explor3" value="<?php echo htmlspecialchars($studentotherdetails['explor3'] ?? ''); ?>">
+				</td>
+					<td>
+					<?php if (!empty($studentotherdetails['explor3'])): ?>
+					<script>
+					  window.addEventListener('DOMContentLoaded', function() {
+						previewFile(<?php echo json_encode($studentotherdetails['explor3']); ?>, 'preview_explor3');
+					  });
+					</script>
+					<?php endif; ?>
+					</td>
+				<td><div id="preview_explor3" class="preview-text"></div></td>
+				
+				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor3name" id="explor3name"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['explor3name'] ?? ''); ?>">
+				</td>
+				<td><label>Email: </label></td><td><input type="email" name="explor3email" id="explor3email"  maxlength="50" 
+				value="<?php echo htmlspecialchars($studentotherdetails['explor3email'] ?? ''); ?>">
+				</td>
+				<td><label>Phone: </label></td><td><input type="text" name="explor3phone" id="explor3phone"  pattern="[0-9]{10}" 
+				 maxlength="10" title="Enter 10 digit phone number" 
+				 value="<?php echo htmlspecialchars($studentotherdetails['explor3phone'] ?? ''); ?>">
+				 </td>
+				 
+				</tr>
+				
 		  </table>
 	  
       </div>
@@ -1811,6 +2007,34 @@ console.log("Modal Called");
 
 function closeMsgModal() {
     document.getElementById("customModal").style.display = "none";
+}
+
+function openDocument(filePath)
+{
+    let ext =
+        filePath.split('.').pop().toLowerCase();
+
+    if(
+        ext === 'pdf' ||
+        ext === 'jpg' ||
+        ext === 'jpeg' ||
+        ext === 'png'
+    )
+    {
+        $("#docFrame").attr("src", filePath);
+
+        $("#docModal").show();
+    }
+    else
+    {
+        window.open(filePath, "_blank");
+    }
+}
+
+function closeDocument()
+{
+    $("#docFrame").attr("src", "");
+    $("#docModal").hide();
 }
 
 </script>

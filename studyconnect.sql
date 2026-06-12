@@ -443,3 +443,34 @@ ADD COLUMN payment_link VARCHAR(1000) NULL;
 
 ALTER TABLE coursechoice
 ADD COLUMN Payment_Status TINYINT(1) DEFAULT 0;
+
+ALTER TABLE studentotherdetails
+ADD COLUMN payment_link_file VARCHAR(1000) NULL,
+ADD COLUMN medical_cond_file VARCHAR(1000) NULL,
+ADD COLUMN visa_refusal_file VARCHAR(1000) NULL,
+ADD COLUMN immi_country_file VARCHAR(1000) NULL,
+ADD COLUMN convicted_offence_file VARCHAR(1000) NULL;
+
+
+ALTER TABLE studentotherdetails
+ADD COLUMN lor1name varchar(100) DEFAULT NULL,
+ADD COLUMN lor1email varchar(100) DEFAULT NULL,
+ADD COLUMN lor1phone varchar(20) DEFAULT NULL,
+ADD COLUMN lor2name varchar(100) DEFAULT NULL,
+ADD COLUMN lor2email varchar(100) DEFAULT NULL,
+ADD COLUMN lor2phone varchar(20) DEFAULT NULL,
+ADD COLUMN lor3name varchar(100) DEFAULT NULL,
+ADD COLUMN lor3email varchar(100) DEFAULT NULL,
+ADD COLUMN lor3phone varchar(20) DEFAULT NULL,
+ADD COLUMN explor1name varchar(100) DEFAULT NULL,
+ADD COLUMN explor1email varchar(100) DEFAULT NULL,
+ADD COLUMN explor1phone varchar(20) DEFAULT NULL,
+ADD COLUMN explor2name varchar(100) DEFAULT NULL,
+ADD COLUMN explor2email varchar(100) DEFAULT NULL,
+ADD COLUMN explor2phone varchar(20) DEFAULT NULL,
+ADD COLUMN explor3name varchar(100) DEFAULT NULL,
+ADD COLUMN explor3email varchar(100) DEFAULT NULL,
+ADD COLUMN explor3phone varchar(20) DEFAULT NULL,
+ADD COLUMN explor1 VARCHAR(1000) DEFAULT NULL,
+ADD COLUMN explor2 VARCHAR(1000) DEFAULT NULL,
+ADD COLUMN explor3 VARCHAR(1000) DEFAULT NULL;

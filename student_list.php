@@ -1,4 +1,5 @@
 <?php
+
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
@@ -166,16 +167,16 @@ $result = $conn->query($sql);
           <td><?= htmlspecialchars($row['Passport_issue']) ?></td>
           <td><?= htmlspecialchars($row['Passport_Expiry']) ?></td>
           <td>
-            <button class="edit-btn" onclick="editStudent(<?= $row['student_id'] ?>)">✏️</button>
+            <button class="edit-btn" title="Edit/Modify Student Details"  onclick="editStudent(<?= $row['student_id'] ?>)">✏️</button>
 	
-			<button class="applications-btn"
+			<button class="applications-btn" title="Applications & Messages"
 			onclick='openApplications(<?= $row["student_id"] ?>,"<?= urlencode($row["name"]) ?>","<?= urlencode($row["email"]) ?>")'>
-			📚 Applications
+			📚 
 			</button>
 
 
             <!-- <button class="delete-btn" onclick="deleteStudent(<?= $row['student_id'] ?>)">🗑️</button>-->
-			<button class="delete-btn" onclick="deleteStudent(<?= $row['student_id'] ?>, this)">🗑️</button>
+			<button class="delete-btn" title="DELETE Student Details" onclick="deleteStudent(<?= $row['student_id'] ?>, this)">🗑️</button>
 			
           </td>
         </tr>

@@ -487,7 +487,7 @@ a:hover{
 
 				<div style="flex:1;">
 
-					<label><b>Your Docs (SOPs)</b></label><br>
+					<label><b>Your Docs (SOPs & Other Docs)</b></label><br>
 
 					<input type="file"
 						   name="your_docs"
