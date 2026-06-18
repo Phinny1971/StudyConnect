@@ -222,6 +222,11 @@ td {
     padding: 20px;
   }
 
+	#modalContentContainer {
+		width: 95vw;
+		height: 90vh;
+		margin: 20px auto;
+	}
   .close {
     position: absolute;
     top: 20px;
@@ -1226,14 +1231,32 @@ function goToTab0() {
     container.innerHTML = `<img src="${src}" class="modal-content">`;
     modal.style.display = "block";
   }
-
+/*
   function openModalPDFInline(url) {
     const modal = document.getElementById("previewModal");
     const container = document.getElementById("modalContentContainer");
     container.innerHTML = `<embed src="${url}" type="application/pdf" class="modal-content" style="height:80vh;">`;
     modal.style.display = "block";
   }
+*/
 
+	function openModalPDFInline(url) {
+		const modal = document.getElementById("previewModal");
+		const container = document.getElementById("modalContentContainer");
+
+		container.innerHTML = `
+			<embed
+				src="${url}"
+				type="application/pdf"
+				style="
+					width:100%;
+					height:100%;
+					border:none;
+				">
+		`;
+
+		modal.style.display = "block";
+	}
   function closeModal() {
     const modal = document.getElementById("previewModal");
     const container = document.getElementById("modalContentContainer");

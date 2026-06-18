@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
   exit;
 }
 
-$sql = "SELECT student_id, name, email, phone, preferred_country, DateOfBirth, Passport_no, Passport_issue, Passport_Expiry, country_code FROM studentdetails ORDER BY student_id DESC";
+$sql = "SELECT student_id, name, email, branch_name, preferred_country,  DATE_FORMAT(DateOfBirth,'%d-%m-%Y') AS DateOfBirth, Passport_no, Passport_issue, country_code, DATE_FORMAT(created_at,'%d-%m-%Y %H:%i') AS created_at FROM studentdetails ORDER BY student_id DESC";
 $result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
@@ -143,14 +143,15 @@ $result = $conn->query($sql);
   <thead>
     <tr>
       <th>Code</th>
+	  <th>Application Date</th>
       <th>Name</th>
       <th>Email</th>
-      <th>Phone</th>
+      <th>Branch</th>
       <th>Country</th>
       <th>Date of Birth</th>
       <th>Passport No</th>
-      <th>Issue</th>
-      <th>Expiry</th>
+    
+   
       <th>Action</th>
     </tr>
   </thead>
@@ -159,14 +160,16 @@ $result = $conn->query($sql);
       <?php while($row = $result->fetch_assoc()): ?>
         <tr>
           <td><?= htmlspecialchars($row['country_code'] . $row['student_id']) ?></td>
+		  <td><?= htmlspecialchars($row['created_at']) ?></td>
           <td><?= htmlspecialchars($row['name']) ?></td>
           <td><?= htmlspecialchars($row['email']) ?></td>
-          <td><?= htmlspecialchars($row['phone']) ?></td>
+          <td><?= htmlspecialchars($row['branch_name']) ?></td>
           <td><?= htmlspecialchars($row['preferred_country']) ?></td>
           <td><?= htmlspecialchars($row['DateOfBirth']) ?></td>
           <td><?= htmlspecialchars($row['Passport_no']) ?></td>
-          <td><?= htmlspecialchars($row['Passport_issue']) ?></td>
-          <td><?= htmlspecialchars($row['Passport_Expiry']) ?></td>
+          
+          
+		
           <td>
             <button class="edit-btn" title="Edit/Modify Student Details"  onclick="editStudent(<?= $row['student_id'] ?>)">✏️</button>
 	
@@ -213,7 +216,7 @@ $result = $conn->query($sql);
 const csrfToken = <?= json_encode($_SESSION['csrf_token']) ?>;
 
 console.log("CSRF Token:", csrfToken);
-
+/*
   $(document).ready(function() {
     $('#studentTable').DataTable({
       dom: 'Bfrtip',
@@ -221,7 +224,29 @@ console.log("CSRF Token:", csrfToken);
       responsive: true
     });
   });
-  
+*/
+ 
+  $(document).ready(function() {
+	  $('#studentTable').DataTable({
+			dom: 'Bfrtip',
+			buttons: [
+				'excelHtml5',
+				{
+					extend: 'pdfHtml5',
+					exportOptions: {
+						columns: ':not(:last-child)'
+					}
+				},
+				{
+					extend: 'print',
+					exportOptions: {
+						columns: ':not(:last-child)'
+					}
+				}
+			],
+			responsive: true
+		});
+	});
   
   function editStudent(student_id) {
     console.log("Redirecting to student_edit.php?student_id=" + student_id);
