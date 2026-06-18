@@ -2,6 +2,32 @@
 ob_start();
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+require_once 'session_check.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: student_list.php");
+    exit();
+}
+
+if (
+    !isset($_POST['csrf_token']) ||
+    !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+) {
+
+ /*   echo "<script>
+            alert('Invalid session. Please login again.');
+            window.location='main.php';
+          </script>";
+    exit();
+*/
+
+session_unset();
+session_destroy();
+
+header("Location: main.php?expired=1");
+exit();
+
+}
 
 function nullIfEmpty($value) {
     return ($value === '' || $value === null)

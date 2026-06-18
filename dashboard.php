@@ -1,4 +1,6 @@
-<!-- dashboard.php -->
+<?php
+require_once 'session_check.php';
+?>
 
 <!DOCTYPE html>
 <html>
@@ -34,13 +36,15 @@ $conn = mysqli_connect($host, $user, $password, $database, $port);
 if ($conn->connect_error) {
   http_response_code(500);
   die("Connection failed: " . $conn->connect_error);
+  error_log("Dashboard DB Error: " . $conn->connect_error);
+
 }
 
-require_once 'news/news_helper.php';
+//require_once 'news/news_helper.php';
 
 /* AUTO UPDATE */
 
-updateEducationNews($conn);
+//updateEducationNews($conn);
 
 ?>
 
@@ -162,40 +166,40 @@ LIMIT 6
         <?php while($news = $newsQuery->fetch_assoc()){ ?>
 
         <a
-            href="<?= $news['article_url'] ?>"
+            href="<?= htmlspecialchars($news['article_url']) ?>"
             target="_blank"
             class="news-card"
         >
 
             <img
-                src="<?= $news['image_url'] ?>"
+                src="<?= htmlspecialchars($news['image_url']) ?>"
                 class="news-image"
             >
 
             <div class="news-content">
 
                 <div class="news-tag">
-                    <?= $news['category'] ?>
+                    <?= htmlspecialchars($news['category']) ?>
                 </div>
 
                 <h3>
-                    <?= $news['title'] ?>
+                    <?= htmlspecialchars($news['title']) ?>
                 </h3>
 
                 <p>
-                    <?= $news['summary'] ?>
+                    <?= htmlspecialchars($news['summary']) ?>
                 </p>
 
                 <div class="news-footer">
 
                     <span>
-                        <?= $news['source_name'] ?>
+                        <?= htmlspecialchars($news['source_name']) ?>
                     </span>
 
                     <span>
                         <?= date(
                             'd M Y',
-                            strtotime($news['published_at'])
+                            strtotime(htmlspecialchars($news['published_at']))
                         ) ?>
                     </span>
 
@@ -217,6 +221,27 @@ LIMIT 6
 
 </div>
 
+<?php $conn->close(); ?>
+
+
+<script>
+
+window.addEventListener('load', function() {
+
+    fetch(
+        'news/update_news.php?t=' + new Date().getTime(),
+        { cache: 'no-store' }
+    )
+    .then(response => response.json())
+    .then(data => {
+        console.log('News updated');
+    })
+    .catch(error => {
+        console.error(error);
+    });
+
+});
+</script>
 
 </body>
 </html>

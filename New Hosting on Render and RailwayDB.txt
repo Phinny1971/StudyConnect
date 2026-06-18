@@ -1,0 +1,11 @@
+Database:
+https://railway.com/project/a7667528-233e-4c57-b918-164accd7525a/service/23c84547-641c-4ed8-a292-507080d1f7e4/database?environmentId=c9015350-e1dd-463d-9eeb-1ea16c319b97&state=table&table=student_messages
+
+Code Repository:
+https://github.com/Phinny1971/StudyConnect
+
+Hosting:
+https://dashboard.render.com/web/srv-d844a53tqb8s73f0bj40/env
+
+Site URL:
+https://studyconnect-v7lw.onrender.com/main.php

@@ -1,4 +1,6 @@
 <?php
+require_once 'session_check.php';
+
 
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
@@ -70,8 +72,7 @@ $result = $conn->query($sql);
 
   <!-- jQuery + DataTables CSS/JS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 
   <style>
     body {
@@ -170,7 +171,7 @@ $result = $conn->query($sql);
             <button class="edit-btn" title="Edit/Modify Student Details"  onclick="editStudent(<?= $row['student_id'] ?>)">✏️</button>
 	
 			<button class="applications-btn" title="Applications & Messages"
-			onclick='openApplications(<?= $row["student_id"] ?>,"<?= urlencode($row["name"]) ?>","<?= urlencode($row["email"]) ?>")'>
+			onclick='openApplications(<?= (int)$row["student_id"] ?>,<?= json_encode($row["name"]) ?>,<?= json_encode($row["email"]) ?>)'>
 			📚 
 			</button>
 
@@ -206,7 +207,13 @@ $result = $conn->query($sql);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
 <script>
+
+const csrfToken = <?= json_encode($_SESSION['csrf_token']) ?>;
+
+console.log("CSRF Token:", csrfToken);
+
   $(document).ready(function() {
     $('#studentTable').DataTable({
       dom: 'Bfrtip',
@@ -214,63 +221,13 @@ $result = $conn->query($sql);
       responsive: true
     });
   });
+  
+  
   function editStudent(student_id) {
     console.log("Redirecting to student_edit.php?student_id=" + student_id);
     window.location.href = 'student_edit.php?student_id=' + student_id;
   }
-/*  function deleteStudent(student_id) {
-    if (confirm("Are you sure you want to delete this student?")) {
-      $.post('delete_student.php', { delete_id: student_id }, function(response) {
-        if (response.trim() === "success") {
-          alert("Student deleted successfully.");
-          location.reload();
-        } else {
-          alert("Delete failed: " + response);
-          console.error("Delete error:", response);
-        }
-      }).fail(function(xhr) {
-        alert("AJAX failed: " + xhr.responseText);
-        console.error("AJAX error:", xhr.responseText);
-      });
-    }
-  }
-  */
-  /*
-  function deleteStudent(student_id, btn) {
-    if (!confirm("Are you sure you want to delete this student? " + student_id)) {
-        return;
-    }
 
-    // Disable button to prevent double click
-    btn.disabled = true;
-    btn.innerText = "Deleting...";
-
-    $.post('delete_student.php', { delete_id: student_id }, function(response) {
-
-        if (response.trim() === "success") {
-
-            // Remove row without reload
-            $(btn).closest('tr').fadeOut(300, function() {
-                $(this).remove();
-            });
-
-        } else {
-            alert("Delete failed: " + response);
-            console.error("Delete error:", response);
-
-            btn.disabled = false;
-            btn.innerText = "🗑️";
-        }
-
-    }).fail(function(xhr) {
-        alert("AJAX failed: " + xhr.responseText);
-        console.error("AJAX error:", xhr.responseText);
-
-        btn.disabled = false;
-        btn.innerText = "🗑️";
-    });
-}
-*/
 
 function deleteStudent(student_id, btn) {
 
@@ -287,7 +244,10 @@ function deleteStudent(student_id, btn) {
             btn.innerText = "Deleting...";
 
             $.post('delete_student.php',
-                { delete_id: student_id },
+                { 
+				delete_id: student_id,
+				csrf_token: csrfToken 
+				},
 
                 function(response) {
 
@@ -311,16 +271,24 @@ function deleteStudent(student_id, btn) {
                 }
 
             ).fail(function(xhr) {
+				if (
+					xhr.status === 401 ||
+					xhr.responseText === 'SESSION_EXPIRED'
+				) {
 
-                showModal({
-                    title: 'AJAX Error',
-                    message: xhr.responseText,
-                    showOk: true
-                });
+					window.location.href = 'main.php?expired=1';
+					return;
+				}
 
-                btn.disabled = false;
-                btn.innerText = "🗑️";
-            });
+				showModal({
+					title: 'AJAX Error',
+					message: xhr.responseText,
+					showOk: true
+				});
+
+				btn.disabled = false;
+				btn.innerText = "🗑️";
+			});
 
         }
 
@@ -401,22 +369,16 @@ function closeMsgModal() {
 
 function openApplications(studentId, studentName, email) {
 
-     const url =
-        "student_applications.php?student_id=" + studentId +
-        "&student_name=" + studentName +
-        "&email=" + email;
-		
-		window.location.href = url;
-/*
-    window.open(
-        url,
-        '_blank',
-        'width=1400,height=850,resizable=yes,scrollbars=yes'
-    );
-*/
+    const url =
+        "student_applications.php?student_id=" +
+        encodeURIComponent(studentId) +
+        "&student_name=" +
+        encodeURIComponent(studentName) +
+        "&email=" +
+        encodeURIComponent(email);
 
+    window.location.href = url;
 }
-
 </script>
 
 <!-- Custom Modal -->

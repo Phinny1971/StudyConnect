@@ -13,8 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // TEMP LOGIN
     if ($email == 'admin@studyconnect.com' && $password == 'admin123') {
 
+		session_regenerate_id(true);
+	
         $_SESSION['user_name'] = 'Administrator';
         $_SESSION['email'] = $email;
+		$_SESSION['login_time'] = time();
+		$_SESSION['last_activity'] = time();
 
         header('Location: main.php');
         exit;
@@ -29,6 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>StudyConnect Login</title>
     <link rel="stylesheet" href="css/style.css">
+	<style>
+	.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+	</style>
+	
 </head>
 <body class="login-body">
 
@@ -47,6 +62,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800"
             class="login-image">
     </div>
+
+	<?php include 'modal.php'; ?>
+
+	<?php if (isset($_GET['expired'])) { ?>
+	<script>
+	document.addEventListener("DOMContentLoaded", function() {
+
+		showModal({
+			title: "Session Expired",
+			message: "Your session expired due to inactivity. Please login again.",
+			showOk: true
+		});
+
+	});
+	</script>
+	<?php } ?>
+
+
+
 
     <div class="login-right">
 
@@ -80,6 +114,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
 </div>
+
+<?php if (isset($_GET['expired'])) : ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showModal({
+        title: 'Session Expired',
+        message: 'Your session expired due to inactivity. Please login again.',
+        showOk: true
+    });
+});
+</script>
+<?php endif; ?>
 
 </body>
 </html>

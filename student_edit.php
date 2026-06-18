@@ -1,5 +1,6 @@
- 
 <?php
+require_once 'session_check.php';
+
 
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
@@ -326,6 +327,8 @@ $conn->close();
   </div>
 
   <form action="update_student.php" method="post" enctype="multipart/form-data" onsubmit="return validateForm();">
+  
+	<input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 	
 	<input type="hidden" name="student_id" value="<?php echo $student_id; ?>">
     <!-- Tab 1 -->
@@ -352,6 +355,7 @@ $conn->close();
 	  
 	  <input type="hidden" name="existing_Passport_Upload"
        value="<?php echo htmlspecialchars($student['Passport_Upload'] ?? ''); ?>">
+
 	   
 	  </td>
 	  <td>
@@ -1506,43 +1510,7 @@ function goToTab0() {
 
 
 <script>
-/*
-const studentId = <?= $student_id ?>;
-let courses = <?= json_encode($records) ?>;
-const studentName = <?= json_encode($student['name']) ?>;
-const studentEmail = <?= json_encode($student['email']) ?>;
 
-        function renderTable() {
-            const tbody = document.getElementById("courseBody");
-            tbody.innerHTML = "";
-            courses.forEach((c, idx) => {
-                tbody.innerHTML += `<tr style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>${c.University_Name}</td>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>${c.Course_Name}</td>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'><a href="${c.Course_URL}" target="_blank">${c.Course_URL}</a></tdstyle='padding: 12px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                        <button type="button" onclick="editRow(${idx})">Edit</buttonstyle='padding: 12px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                        <button type="button" onclick="deleteRow(${idx})">Delete</button>
-	
-						 
-					<button type="button"
-					onclick="openMessages(studentId,
-					'${encodeURIComponent(c.University_Name)}',
-					'${encodeURIComponent(studentName)}',
-					'${encodeURIComponent(studentEmail)}')">
-					💬 Messages
-					</button>
-						
-           
-                    </td>
-					
-                  </tr>`;
-            });
-            document.getElementById("coursesInput").value = JSON.stringify(courses);
-        }
-
-        window.onload = renderTable;
-*/		
 		
 const studentId = <?= $student_id ?>;
 let courses = <?= json_encode($records) ?>;
@@ -1822,39 +1790,6 @@ function previewFile(input, previewId) {
 }
 
 
-  /*function previewFile(input, previewId) {
-    const file = input.files[0];
-    const preview = document.getElementById(previewId);
-    preview.innerHTML = '';
-
-    if (!file) return;
-
-    const ext = file.name.split('.').pop().toLowerCase();
-    const validImageTypes = ['jpg', 'jpeg', 'png'];
-
-    if (validImageTypes.includes(ext)) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'preview-img';
-        img.onclick = function() { openModalImage(e.target.result); };
-        preview.appendChild(img);
-      };
-      reader.readAsDataURL(file);
-    } else if (ext === 'pdf') {
-      const span = document.createElement('span');
-      span.textContent = "Click to Open: " + file.name;
-      span.className = 'preview-text';
-      span.onclick = function() {
-        const url = URL.createObjectURL(file);
-        openModalPDFInline(url);
-      };
-      preview.appendChild(span);
-    } else {
-      preview.textContent = "Unsupported file type: " + file.name;
-    }
-  }*/
 
   function openModalImage(src) {
     const modal = document.getElementById("previewModal");

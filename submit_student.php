@@ -34,7 +34,8 @@ console.log("Modal Called");
 
     // Set content
     title.innerText = settings.title;
-    message.innerHTML = settings.message;
+    //message.innerHTML = settings.message;
+	message.textContent = settings.message;
 
     // Show/hide buttons
     yesBtn.style.display = settings.showYesNo ? "inline-block" : "none";
@@ -82,6 +83,7 @@ $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
 
+
 /*
 $host = "localhost";
 $dbname = "studyconnect";
@@ -93,10 +95,34 @@ $password = "Study@2025";
 $conn = mysqli_connect($host, $user, $password, $database, $port);
 //$conn = new mysqli($host, $username, $password, $dbname);
 
+session_start();
+if (
+    !isset($_POST['csrf_token']) ||
+    !isset($_SESSION['csrf_token']) ||
+    !hash_equals(
+        $_SESSION['csrf_token'],
+        $_POST['csrf_token']
+    )
+) {
+    die("Invalid request");
+}
+
 // Check connection
-if ($conn->connect_error) {
+/*if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
+*/
+if (!$conn) {
+
+   error_log(
+      mysqli_connect_error()
+   );
+
+   die(
+      "Database unavailable"
+   );
+}
+
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -129,7 +155,8 @@ function dateOrNull($value) {
 // Create uploads directory if not exists
 $uploadDir = "uploads/";
 if (!file_exists($uploadDir)) {
-  mkdir($uploadDir, 0777, true);
+  //mkdir($uploadDir, 0777, true);
+  mkdir($uploadDir, 0750, true);
 }
 
 //Check for Record already exists in combo DOB and PassportNo
@@ -145,7 +172,7 @@ $result = $stmt->get_result();
 //-------------------------------
 
 if ($result->num_rows === 0) {
-
+/*
 function uploadFile($fieldName) {
   global $uploadDir;
   if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] != 0) return "";
@@ -160,6 +187,75 @@ function uploadFile($fieldName) {
     return $targetPath;
   }
   return "";
+}
+*/
+
+function uploadFile($fieldName)
+{
+    global $uploadDir;
+    if (
+        !isset($_FILES[$fieldName]) ||
+        $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK
+    ) {
+        return null;
+    }
+
+    $maxSize = 5 * 1024 * 1024;
+
+    if ($_FILES[$fieldName]['size'] > $maxSize) {
+        throw new Exception(
+            "File too large: " . $fieldName
+        );
+    }
+
+    $allowedMimeTypes = [
+        'application/pdf' => 'pdf',
+        'image/jpeg'      => 'jpg',
+        'image/png'       => 'png'
+    ];
+
+    $finfo = finfo_open(
+        FILEINFO_MIME_TYPE
+    );
+
+    $mime = finfo_file(
+        $finfo,
+        $_FILES[$fieldName]['tmp_name']
+    );
+
+    finfo_close($finfo);
+
+    if (!isset($allowedMimeTypes[$mime])) {
+        throw new Exception(
+            "Invalid file type"
+        );
+    }
+
+    $extension =
+        $allowedMimeTypes[$mime];
+
+    $newFileName =
+        bin2hex(random_bytes(16))
+        . "."
+        . $extension;
+
+    $target =
+        $uploadDir
+        . DIRECTORY_SEPARATOR
+        . $newFileName;
+
+    if (
+        !move_uploaded_file(
+            $_FILES[$fieldName]['tmp_name'],
+            $target
+        )
+    ) {
+        throw new Exception(
+            "Upload failed"
+        );
+    }
+
+    return $target;
 }
 
 
@@ -274,30 +370,47 @@ $stmt->bind_param("ssssssssssssssssssssssssssssssssss",
   $DateOfBirth, $Passport_no, $Passport_issue, $Passport_Expiry, $Passport_Upload
 );
 
- 
-if ($stmt->execute()) {
-	$last_id = mysqli_insert_id($conn);
-  //echo "Student details saved successfully!";
-  saveLangAptTest($conn, $last_id, $Country_code);
-  saveOtherDetails($conn, $last_id, $Country_code);
-  saveCourseChoices($conn, $last_id, $Country_code, $courses);
- //echo "<script type='text/javascript'>alert('Student details saved successfully!. Student Id : " . $Country_code . $last_id . "');  </script>";
- 
+$conn->begin_transaction();
 
-echo "<script type='text/javascript'>
-showModal({
-    title: 'Success',
-    message: 'Student details saved successfully. Student Id: " . $Country_code . $last_id . "',
-    showOk: true, onOk: function () {
-        window.location.href = 'student_list.php';
-    }
-}); 
-</script>";
+try {
+
+   // all inserts 
+	if ($stmt->execute()) {
+		$last_id = mysqli_insert_id($conn);
+	  //echo "Student details saved successfully!";
+	  saveLangAptTest($conn, $last_id, $Country_code);
+	  saveOtherDetails($conn, $last_id, $Country_code);
+	  saveCourseChoices($conn, $last_id, $Country_code, $courses);
+	 //echo "<script type='text/javascript'>alert('Student details saved successfully!. Student Id : " . $Country_code . $last_id . "');  </script>";
+	 
+
+	echo "<script type='text/javascript'>
+	showModal({
+		title: 'Success',
+		message: 'Student details saved successfully. Student Id: " . $Country_code . $last_id . "',
+		showOk: true, onOk: function () {
+			window.location.href = 'student_list.php';
+		}
+	}); 
+	</script>";
 
 
 
-} else {
-  echo "Error: " . $stmt->error;
+	} else {
+	  //echo "Error: " . $stmt->error;
+		error_log($stmt->error);
+
+		throw new Exception(
+			"Database operation failed"
+		);
+	}
+ $conn->commit();
+
+} catch(Exception $e){
+
+   $conn->rollback();
+
+   throw $e;
 }
 
 }
@@ -361,21 +474,23 @@ $ENGOTHER_NAME = nullIfEmpty($_POST['ENGOTHER_NAME'] ?? null);
 $GRE_OA=decimalOrNull( $_POST['GRE_OA'] ?? null);
 $SAT_OA=decimalOrNull( $_POST['SAT_OA'] ?? null);
 $GMAT_OA=decimalOrNull( $_POST['GMAT_OA'] ?? null);
-$APTOTHER_NAME=decimalOrNull( $_POST['APTOTHER_NAME'] ?? null);
+
+$APTOTHER_OA=decimalOrNull( $_POST['APTOTHER_OA'] ?? null);
 //$APTOTHER_OA=decimalOrNull( $_POST['APTOTHER_OA'] ?? null);
+
 $APTOTHER_NAME = nullIfEmpty($_POST['APTOTHER_NAME'] ?? null);
 	
-$ENGOTHER_UPLOAD=decimalOrNull( uploadFile('ENGOTHER_UPLOAD') ?? null);
-$IELTS_UPLOAD=decimalOrNull( uploadFile('IELTS_UPLOAD') ?? null);
-$APTOTHER_UPLOAD=decimalOrNull( uploadFile('APTOTHER_UPLOAD') ?? null);
-$GMAT_UPLOAD=decimalOrNull( uploadFile('GMAT_UPLOAD') ?? null);
-$SAT_UPLOAD=decimalOrNull( uploadFile('SAT_UPLOAD') ?? null);
-$GRE_UPLOAD=decimalOrNull( uploadFile('GRE_UPLOAD') ?? null);
-$DULINGO_UPLOAD=decimalOrNull( uploadFile('DULINGO_UPLOAD') ?? null);
-$LANGCERT_UPLOAD=decimalOrNull( uploadFile('LANGCERT_UPLOAD') ?? null);
-$IELTS_UPLOAD=decimalOrNull( uploadFile('IELTS_UPLOAD') ?? null);
-$PTE_UPLOAD=decimalOrNull( uploadFile('PTE_UPLOAD') ?? null);
-$TOEFL_UPLOAD=decimalOrNull( uploadFile('TOEFL_UPLOAD') ?? null);
+$ENGOTHER_UPLOAD= nullIfEmpty(uploadFile('ENGOTHER_UPLOAD') ?? null);
+$IELTS_UPLOAD= nullIfEmpty(uploadFile('IELTS_UPLOAD') ?? null);
+$APTOTHER_UPLOAD= nullIfEmpty(uploadFile('APTOTHER_UPLOAD') ?? null);
+$GMAT_UPLOAD= nullIfEmpty(uploadFile('GMAT_UPLOAD') ?? null);
+$SAT_UPLOAD= nullIfEmpty(uploadFile('SAT_UPLOAD') ?? null);
+$GRE_UPLOAD= nullIfEmpty(uploadFile('GRE_UPLOAD') ?? null);
+$DULINGO_UPLOAD= nullIfEmpty(uploadFile('DULINGO_UPLOAD') ?? null);
+$LANGCERT_UPLOAD= nullIfEmpty(uploadFile('LANGCERT_UPLOAD') ?? null);
+$IELTS_UPLOAD= nullIfEmpty(uploadFile('IELTS_UPLOAD') ?? null);
+$PTE_UPLOAD= nullIfEmpty(uploadFile('PTE_UPLOAD') ?? null);
+$TOEFL_UPLOAD= nullIfEmpty(uploadFile('TOEFL_UPLOAD') ?? null);
 
 // Prepare SQL
 $sql = "INSERT INTO studentlanguagetests(
@@ -407,7 +522,11 @@ $SAT_UPLOAD,$GRE_UPLOAD,$DULINGO_UPLOAD,$LANGCERT_UPLOAD,$PTE_UPLOAD,$TOEFL_UPLO
 		//$last_id = mysqli_insert_id($conn);
 	// echo "<script type='text/javascript'>alert('Language & Aptitude saved successfully!. Student Id : " . $Country_code . $last_id . "');  </script>";
 	} else {
-	  echo "Error: " . $stmt->error;
+	  //echo "Error: " . $stmt->error;
+		error_log($stmt->error);
+		throw new Exception(
+			"Database operation failed"
+		);
 	}
 	
 $stmt->close();	
@@ -417,54 +536,6 @@ $stmt->close();
 
 //
 
-/*
-function saveCourseChoices($conn, $student_id, $Country_code, $coursesJson) {
-
-    // Decode JSON
-    //$courses = json_decode($coursesJson, true);
-	$courses = $coursesJson;
-
-    if (!$courses || !is_array($courses)) {
-        return false; // nothing to insert
-    }
-
-    // 🔹 Start transaction (important)
-    //$conn->begin_transaction();
-
-    try {
-        // 🔹 Delete existing records
-        $stmtDelete = $conn->prepare("DELETE FROM coursechoice WHERE student_id = ?");
-        $stmtDelete->bind_param("i", $student_id);
-        $stmtDelete->execute();
-
-        // 🔹 Insert new records
-        $stmtInsert = $conn->prepare("INSERT INTO coursechoice 
-        (student_id, COUNTRY_CODE, University_Name, Course_Name, Course_URL) 
-        VALUES (?, ?, ?, ?, ?)");
-
-        foreach ($courses as $c) {
-            $stmtInsert->bind_param(
-                "issss",
-                $student_id,
-                $Country_code,
-                $c['University_Name'],
-                $c['Course_Name'],
-                $c['Course_URL']
-            );
-            $stmtInsert->execute();
-        }
-
-        // 🔹 Commit
-        $conn->commit();
-        return true;
-
-    } catch (Exception $e) {
-        // 🔹 Rollback if anything fails
-       // $conn->rollback();
-        return false;
-    }
-}
-*/
 
 function saveCourseChoices($conn, $student_id, $Country_code, $coursesJson) {
 
@@ -535,7 +606,7 @@ function saveCourseChoices($conn, $student_id, $Country_code, $coursesJson) {
         $stmtInsert->close();
 
         // Commit transaction
-        $conn->commit();
+        //$conn->commit();
 
         return true;
 

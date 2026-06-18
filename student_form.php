@@ -1,20 +1,21 @@
 <?php
-session_start();
+require_once 'session_check.php';
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 // Prevent browser cache
 header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
 header("Pragma: no-cache"); // HTTP 1.0
 header("Expires: 0"); // Proxies
 
-/*Temporary
-if (!isset($_SESSION["user_id"])) {
-    header("Location: login.php");
-    exit();
-}
- */
+header("X-Frame-Options: SAMEORIGIN");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header("X-XSS-Protection: 1; mode=block");
+
+
 
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
@@ -36,7 +37,15 @@ $conn = mysqli_connect($host, $user, $password, $database, $port);
 
 // Check connection
 if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+  //die("Connection failed: " . $conn->connect_error);
+	error_log(
+    "Database Connection Failed : "
+    . mysqli_connect_error()
+	);
+
+	die(
+		"System temporarily unavailable."
+	);
 }
 
 // Fetch countries
@@ -70,11 +79,16 @@ if ($result->num_rows > 0) {
 }
 
 // Fetch for display (if needed)
+/*
 $res = $conn->prepare("SELECT * FROM coursechoice WHERE student_id=?");
 $res->bind_param("i", $student_id);
 $res->execute();
 $records = $res->get_result()->fetch_all(MYSQLI_ASSOC);
 $res->close();
+*/
+
+$student_id = 0;
+$records = [];
 
 
 $conn->close();
@@ -251,6 +265,8 @@ td {
   </div>
 
   <form action="submit_student.php" method="post" enctype="multipart/form-data" onsubmit="return validateForm();">
+	
+	<input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>" >
 
     <!-- Tab 1 -->
     <div class="tab active">
@@ -264,7 +280,7 @@ td {
 	 <td ><div id="preview_passport" class="preview-text"></div></td>
 	 </tr>
      
-	 <tr> <td><label>Email: </label></td><td><input type="email" name="email" id="email" class="required" maxlength="50"></td>
+	 <tr> <td><label>Email: </label></td><td><input type="email" name="email" id="email" class="required" maxlength="100" ></td>
 	<td style="width:50px;"></td><td>  <label>Date of Issue: </label></td>  <td> <input type="date" name="Passport_issue" class="required"> </td>
 	 </tr>
 
@@ -273,7 +289,10 @@ td {
 	 <td style="width:50px;"></td><td><label>Date of Expiry: </label></td>  <td> <input type="date" name="Passport_Expiry" class="required"> </td>
 	 </tr>
 	 
-     <tr> <td><label>Phone: </label></td><td><input type="text" name="phone" id="phone" class="required" pattern="[0-9]{10}" title="Enter 10 digit phone number"></td>
+     <tr> <td><label>Phone: </label></td><td>
+	 <input type="text" name="phone" id="phone" class="required" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit phone number">
+	 
+	 </td>
 
       <td style="width:50px;"></td><td><label>Branch of Registration: </label></td>
 	 <td> 
@@ -349,7 +368,10 @@ td {
 		 <tr> 
 		 <td><label>Name: </label></td><td style="width:50px;"></td><td > <input  type="text" name="emergency_name" id="emergency_name"  maxlength="50"> </td>
 		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Emergency Phone: </label></td>	 
-		  <td > <input type="text" name="emergency_phone" id="emergency_phone"  pattern="[0-9]{10}" title="Enter 10 digit phone number"> </td>
+		  <td > 
+		  <input type="text" name="emergency_phone" id="emergency_phone"  pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"> 
+		  
+		  </td>
 		 <td ></td>
 		 <td ></td>
 		 </tr>
@@ -485,9 +507,11 @@ td {
 				<td><div id="preview_lor1" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor1name" id="lor1name"  maxlength="50"> </td>
-				<td><label>Email: </label></td><td><input type="email" name="lor1email" id="lor1email"  maxlength="50"></td>
-				<td><label>Phone: </label></td><td><input type="text" name="lor1phone" id="lor1phone"  pattern="[0-9]{10}" 
-				 maxlength="10" title="Enter 10 digit phone number"></td>
+				<td><label>Email: </label></td><td><input type="email" name="lor1email" id="lor1email"  maxlength="100"></td>
+				<td><label>Phone: </label></td><td>
+				<input type="text" name="lor1phone" id="lor1phone"  pattern="[0-9]{10}" maxlength="10"  inputmode="numeric" title="Enter 10 digit phone number"> 
+
+				</td>
 			</tr>
 
 			<tr>
@@ -498,9 +522,9 @@ td {
 				<td><div id="preview_lor2" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor2name" id="lor2name"  maxlength="50"> </td>
-				<td><label>Email: </label></td><td><input type="email" name="lor2email" id="lor2email"  maxlength="50"></td>
+				<td><label>Email: </label></td><td><input type="email" name="lor2email" id="lor2email"  maxlength="100"></td>
 				<td><label>Phone: </label></td><td><input type="text" name="lor2phone" id="lor2phone"  pattern="[0-9]{10}" 
-				 maxlength="10" title="Enter 10 digit phone number"></td>
+				 maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"></td>
 			</tr>
 			
 			<tr>
@@ -511,9 +535,9 @@ td {
 				<td><div id="preview_lor3" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor3name" id="lor3name"  maxlength="50"> </td>
-				<td><label>Email: </label></td><td><input type="email" name="lor3email" id="lor3email"  maxlength="50"></td>
+				<td><label>Email: </label></td><td><input type="email" name="lor3email" id="lor3email"  maxlength="100"></td>
 				<td><label>Phone: </label></td><td><input type="text" name="lor3phone" id="lor3phone"  pattern="[0-9]{10}" 
-				 maxlength="10" title="Enter 10 digit phone number"></td>
+				 maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"></td>
 			</tr>
 			
 		
@@ -560,9 +584,9 @@ td {
 				<td><div id="preview_explor1" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor1name" id="explor1name"  maxlength="50"> </td>
-				<td><label>Email: </label></td><td><input type="email" name="explor1email" id="explor1email"  maxlength="50"></td>
+				<td><label>Email: </label></td><td><input type="email" name="explor1email" id="explor1email"  maxlength="100"></td>
 				<td><label>Phone: </label></td><td><input type="text" name="explor1phone" id="explor1phone"  pattern="[0-9]{10}" 
-				 maxlength="10" title="Enter 10 digit phone number"></td>
+				 maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"></td>
 			</tr>
 
 			<tr>
@@ -572,9 +596,9 @@ td {
 				<td><div id="preview_explor2" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor2name" id="explor2name"  maxlength="50"> </td>
-				<td><label>Email: </label></td><td><input type="email" name="explor2email" id="explor2email"  maxlength="50"></td>
+				<td><label>Email: </label></td><td><input type="email" name="explor2email" id="explor2email"  maxlength="100"></td>
 				<td><label>Phone: </label></td><td><input type="text" name="explor2phone" id="explor2phone"  pattern="[0-9]{10}" 
-				 maxlength="10" title="Enter 10 digit phone number"></td>
+				 maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"></td>
 			</tr>
 			
 			<tr>
@@ -584,9 +608,9 @@ td {
 				<td><div id="preview_explor3" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor3name" id="explor3name"  maxlength="50"> </td>
-				<td><label>Email: </label></td><td><input type="email" name="explor3email" id="explor3email"  maxlength="50"></td>
+				<td><label>Email: </label></td><td><input type="email" name="explor3email" id="explor3email"  maxlength="100"></td>
 				<td><label>Phone: </label></td><td><input type="text" name="explor3phone" id="explor3phone"  pattern="[0-9]{10}" 
-				 maxlength="10" title="Enter 10 digit phone number"></td>
+				 maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"></td>
 			</tr>			  
 			  
 		  </table>
@@ -961,34 +985,6 @@ function goToTab0() {
 </script>
 
 
- 
-  <script>
-  function previewFile(input, previewId) {
-    const file = input.files[0];
-    const preview = document.getElementById(previewId);
-    preview.innerHTML = '';
-
-    if (!file) return;
-
-    const ext = file.name.split('.').pop().toLowerCase();
-    const validImageTypes = ['jpg', 'jpeg', 'png'];
-
-    if (validImageTypes.includes(ext)) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'preview-img';
-        preview.appendChild(img);
-      };
-      reader.readAsDataURL(file);
-    } else if (ext === 'pdf') {
-      preview.textContent = "Click to Open: " + file.name;
-    } else {
-      preview.textContent = "Unsupported file type: " + file.name;
-    }
-  }
-</script>
 
 <!-- Modal for Preview -->
 <div id="previewModal" class="modal">
@@ -1017,7 +1013,13 @@ function goToTab0() {
             document.getElementById("coursesInput").value = JSON.stringify(courses);
         }
 		*/
-		
+	
+		function escapeHtml(text) {
+			const div = document.createElement('div');
+			div.textContent = text;
+			return div.innerHTML;
+		}
+	
 		function renderTable() {
 
 			const tbody = document.getElementById("courseBody");
@@ -1026,10 +1028,10 @@ function goToTab0() {
 				tbody.innerHTML += `
 				<tr style='height:25px; padding:1px; border:1px solid #ccc; text-align:left;'>
 					<td style='padding:1px; border:1px solid #ccc;'>
-						${c.University_Name}
+						${escapeHtml(c.University_Name)}
 					</td>
 					<td style='padding:1px; border:1px solid #ccc;'>
-						${c.Course_Name}
+						${escapeHtml(c.Course_Name)}
 					</td>
 					<td style='padding:1px; border:1px solid #ccc;'>
 						<a href="${c.Course_URL}" target="_blank">
@@ -1037,10 +1039,10 @@ function goToTab0() {
 						</a>
 					</td>
 					<td style='padding:1px; border:1px solid #ccc;'>
-						${c.Intake_Month}
+						${escapeHtml(c.Intake_Month)}
 					</td>
 					<td style='padding:1px; border:1px solid #ccc;'>
-						${c.Intake_Year}
+						${escapeHtml(c.Intake_Year)}
 					</td>
 					<td style='padding:1px; border:1px solid #ccc;'>
 						<button type="button" onclick="editRow(${idx})">
@@ -1075,6 +1077,15 @@ function goToTab0() {
                 document.getElementById("url").value="";
             */
 			if (uni && course && url && intakeMonth && intakeYear) {
+
+				if (!isValidUrl(url)) {
+					showModal({
+						title:"Invalid URL",
+						message:"Please enter a valid HTTP or HTTPS URL",
+						showOk:true
+					});
+					return;
+				}
 
 				courses.push({
 					University_Name: uni,
@@ -1144,13 +1155,45 @@ function goToTab0() {
 */
 
   function previewFile(input, previewId) {
+	
+	const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const file = input.files[0];
+	
+	if (file.size > MAX_FILE_SIZE) {
+    showModal({
+        title:"File Too Large",
+        message:"Maximum upload size is 5 MB",
+        showOk:true
+    });
+    input.value='';
+    return;
+	}
+
     const preview = document.getElementById(previewId);
     preview.innerHTML = '';
 
     if (!file) return;
 
     const ext = file.name.split('.').pop().toLowerCase();
+	
+	const allowedExtensions = [
+		'jpg',
+		'jpeg',
+		'png',
+		'pdf'
+	];
+	
+	if (!allowedExtensions.includes(ext)) {
+		showModal({
+			title:"Invalid File",
+			message:"Only JPG, PNG and PDF files are allowed.",
+			showOk:true
+		});
+		input.value='';
+		return;
+	}
+
+
     const validImageTypes = ['jpg', 'jpeg', 'png'];
 
     if (validImageTypes.includes(ext)) {
@@ -1291,8 +1334,9 @@ console.log("Modal Called");
 
     // Set content
     title.innerText = settings.title;
-    message.innerHTML = settings.message;
-
+    //message.innerHTML = settings.message;
+	message.textContent = settings.message;
+	
     // Show/hide buttons
     yesBtn.style.display = settings.showYesNo ? "inline-block" : "none";
     noBtn.style.display = settings.showYesNo ? "inline-block" : "none";
@@ -1328,6 +1372,20 @@ console.log("Modal Called");
 
 function closeMsgModal() {
     document.getElementById("customModal").style.display = "none";
+}
+
+function isValidUrl(url) {
+    try {
+        const u = new URL(url);
+
+        return (
+            u.protocol === "http:" ||
+            u.protocol === "https:"
+        );
+    }
+    catch {
+        return false;
+    }
 }
 </script>
 
