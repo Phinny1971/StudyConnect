@@ -147,7 +147,7 @@ $result = $conn->query($sql);
       <th>Name</th>
       <th>Email</th>
       <th>Branch</th>
-      <th>Country</th>
+      <th>Country Applied</th>
       <th>Date of Birth</th>
       <th>Passport No</th>
     
