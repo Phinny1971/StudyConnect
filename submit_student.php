@@ -1,3 +1,19 @@
+<?php
+require_once 'session_check.php';
+
+if (
+    !isset($_POST['csrf_token']) ||
+    !isset($_SESSION['csrf_token']) ||
+    !hash_equals(
+        $_SESSION['csrf_token'],
+        $_POST['csrf_token']
+    )
+) {
+    die("Invalid request");
+}
+
+?>
+
 <link rel="stylesheet" href="css/style.css">
 
 <!-- Custom Modal -->
@@ -95,17 +111,7 @@ $password = "Study@2025";
 $conn = mysqli_connect($host, $user, $password, $database, $port);
 //$conn = new mysqli($host, $username, $password, $dbname);
 
-session_start();
-if (
-    !isset($_POST['csrf_token']) ||
-    !isset($_SESSION['csrf_token']) ||
-    !hash_equals(
-        $_SESSION['csrf_token'],
-        $_POST['csrf_token']
-    )
-) {
-    die("Invalid request");
-}
+
 
 // Check connection
 /*if ($conn->connect_error) {
