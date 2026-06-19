@@ -95,7 +95,7 @@ $password = "Study@2025";
 $conn = mysqli_connect($host, $user, $password, $database, $port);
 //$conn = new mysqli($host, $username, $password, $dbname);
 
-session_start();
+//session_start();
 if (
     !isset($_POST['csrf_token']) ||
     !isset($_SESSION['csrf_token']) ||
