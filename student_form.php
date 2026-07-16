@@ -281,7 +281,7 @@ td {
      <tr> 
 	 <td ><label>Name: </label></td><td > <input  type="text" name="name" id="name" class="required" maxlength="50"> </td>
 	  <td style="width:50px;"></td> <td style="width:200px;" ><label>Passport No.: </label></td>	 <td > <input type="text" name="Passport_no" maxlength="50" class="required"> </td>
-	 <td ><input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"  onchange="previewFile(this, 'preview_passport')" class="required"></td>
+	 <td ><input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_passport')" class="required"></td>
 	 <td ><div id="preview_passport" class="preview-text"></div></td>
 	 </tr>
      
