@@ -1,29 +1,32 @@
 <?php
 require_once 'session_check.php';
+requirePermission('student.view');
 
 
+/*
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+*/
 
-/*
 $host = "localhost";
 $dbname = "studyconnect";
 $username = "StudyConnect";
 $password = "Study@2025";
-*/
+
 
 // Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+//$conn = mysqli_connect($host, $user, $password, $database, $port);
+$conn = new mysqli($host, $username, $password, $dbname);
 
 if ($conn->connect_error) {
   http_response_code(500);
   die("Connection failed: " . $conn->connect_error);
 }
 
+/*
 // Handle delete request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
   $student_id = intval($_POST['delete_id']);
@@ -46,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
   }
   exit;
 }
+*/
 
 $sql = "SELECT student_id, name, email, branch_name, preferred_country,  DATE_FORMAT(DateOfBirth,'%d-%m-%Y') AS DateOfBirth, Passport_no, Passport_issue, country_code, DATE_FORMAT(created_at,'%d-%m-%Y %H:%i') AS created_at FROM studentdetails ORDER BY student_id DESC";
 $result = $conn->query($sql);
@@ -171,16 +175,29 @@ $result = $conn->query($sql);
           
 		
           <td>
-            <button class="edit-btn" title="Edit/Modify Student Details"  onclick="editStudent(<?= $row['student_id'] ?>)">✏️</button>
+            
+			<?php if (hasPermission('student.edit')) : ?>
+			<button
+				class="edit-btn"
+				title="Edit/Modify Student Details"
+				onclick="editStudent(<?= $row['student_id'] ?>)">
+				✏️
+			</button>
+			<?php endif; ?>
 	
 			<button class="applications-btn" title="Applications & Messages"
 			onclick='openApplications(<?= (int)$row["student_id"] ?>,<?= json_encode($row["name"]) ?>,<?= json_encode($row["email"]) ?>)'>
 			📚 
 			</button>
 
-
-            <!-- <button class="delete-btn" onclick="deleteStudent(<?= $row['student_id'] ?>)">🗑️</button>-->
-			<button class="delete-btn" title="DELETE Student Details" onclick="deleteStudent(<?= $row['student_id'] ?>, this)">🗑️</button>
+			<?php if (hasPermission('student.delete')) : ?>
+			<button
+				class="delete-btn"
+				title="DELETE Student Details"
+				onclick="deleteStudent(<?= $row['student_id'] ?>, this)">
+				🗑️
+			</button>
+			<?php endif; ?>
 			
           </td>
         </tr>

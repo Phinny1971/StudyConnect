@@ -1,5 +1,7 @@
 <?php
 require_once 'session_check.php';
+requirePermission('student.create');
+require_once 'includes/db_connection.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -16,24 +18,24 @@ header("Referrer-Policy: strict-origin-when-cross-origin");
 header("X-XSS-Protection: 1; mode=block");
 
 
-
+/*
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+*/
 
 
-/*
 $host = "localhost";
 $dbname = "studyconnect";
 $username = "StudyConnect";
 $password = "Study@2025";
-*/
+
 
 // Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+//$conn = mysqli_connect($host, $user, $password, $database, $port);
+$conn = new mysqli($host, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
@@ -281,7 +283,7 @@ td {
      <tr> 
 	 <td ><label>Name: </label></td><td > <input  type="text" name="name" id="name" class="required" maxlength="50"> </td>
 	  <td style="width:50px;"></td> <td style="width:200px;" ><label>Passport No.: </label></td>	 <td > <input type="text" name="Passport_no" maxlength="50" class="required"> </td>
-	 <td ><input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_passport')" class="required"></td>
+	 <td ><input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_passport')" class="required"></td>
 	 <td ><div id="preview_passport" class="preview-text"></div></td>
 	 </tr>
      
@@ -400,7 +402,7 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="immi_country" id="immi_country"  maxlength="500"> </td>
-		 <td><input type="file" name="immi_country_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_immi_country')" ></td>
+		 <td><input type="file" name="immi_country_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_immi_country')" ></td>
 			   <td><div id="preview_immi_country" class="preview-text"></div></td>
 			   
 		 </tr>
@@ -410,7 +412,7 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="medical_cond" id="medical_cond"  maxlength="500"> </td>
-		 <td><input type="file" name="medical_cond_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_medical_cond')" ></td>
+		 <td><input type="file" name="medical_cond_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_medical_cond')" ></td>
 			   <td><div id="preview_medical_cond" class="preview-text"></div></td>
 		 </tr>
 
@@ -419,7 +421,7 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="visa_refusal" id="visa_refusal"  maxlength="500"> </td>
-		 <td><input type="file" name="visa_refusal_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_visa_refusal')" ></td>
+		 <td><input type="file" name="visa_refusal_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_visa_refusal')" ></td>
 			   <td><div id="preview_visa_refusal" class="preview-text"></div></td>
 		 </tr>
 		 
@@ -428,7 +430,7 @@ td {
 		 </tr>
 		 <tr>
 		 <td > <input  type="text" name="convicted_offence" id="convicted_offence"  maxlength="500"> </td>
-		 <td><input type="file" name="convicted_offence_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_convicted_offence')" ></td>
+		 <td><input type="file" name="convicted_offence_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_convicted_offence')" ></td>
 			   <td><div id="preview_convicted_offence" class="preview-text"></div></td>
 		 </tr>
 		 
@@ -446,37 +448,37 @@ td {
 		  <table>
 			  <tr><td><label>10th Marks (%): </label></td><td><input type="number" name="marks_10th" step="0.01" min="0" max="100" ></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_10th" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_10th')"></td>
+			  <td><input type="file" name="cert_10th" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_10th')"></td>
 			  <td><div id="preview_10th" class="preview-text"></div></td>
 			  </tr>
 			  
 			  <tr><td><label>Intermediate Marks (%):</label></td><td><input type="number" name="marks_intermediate" step="0.01" min="0" max="100" ></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_intermediate" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_intermediate')" ></td>
+			  <td><input type="file" name="cert_intermediate" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_intermediate')" ></td>
 			   <td><div id="preview_intermediate" class="preview-text"></div></td>
 			  </tr>
 			  
 			  <tr><td><label>Degree Marks (%): </label></td><td><input type="number" name="marks_degree" step="0.01" min="0" max="100" ></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_degree" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_Degree')" ></td>
+			  <td><input type="file" name="cert_degree" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_Degree')" ></td>
 			   <td><div id="preview_Degree" class="preview-text"></div></td>
 			  </tr>
 			  
 			  <tr><td><label>Post Graduation Marks (%):</label> </td><td><input type="number" name="marks_pg" step="0.01" min="0" max="100"></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_pg" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_PG')"></td>
+			  <td><input type="file" name="cert_pg" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_PG')"></td>
 			  <td><div id="preview_PG" class="preview-text"></div></td>
 			  </tr>
 			  
 			  <tr><td><label>Diploma Marks (%):</label> </td><td><input type="number" name="marks_diploma" step="0.01" min="0" max="100"></td>
 			  <td><label>Certificate:</label></td>
-			  <td> <input type="file" name="cert_diploma" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_Diploma')"></td>
+			  <td> <input type="file" name="cert_diploma" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_Diploma')"></td>
 			  <td><div id="preview_Diploma" class="preview-text"></div></td>
 			  </tr>
 			  
 			  <tr><td><label>Other Marks (%):</label></td><td><input type="number" name="marks_other" step="0.01" min="0" max="100"></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_Other')"></td>
+			  <td><input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_Other')"></td>
 			   <td><div id="preview_Other" class="preview-text"></div></td>
 			  </tr>
 		
@@ -484,7 +486,7 @@ td {
 				<td><label>Medium of Instruction (MOI):</label></td>
 				<td></td>
 				<td></td>
-				<td><input type="file" name="moi" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_moi')"></td>
+				<td><input type="file" name="moi" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_moi')"></td>
 				<td><div id="preview_moi" class="preview-text"></div></td>
 			</tr>	
 
@@ -492,7 +494,7 @@ td {
 				<td><label>CV / Resume:</label></td>
 				<td></td>
 				<td></td>
-				<td><input type="file" name="resume" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_resume')"></td>
+				<td><input type="file" name="resume" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_resume')"></td>
 				<td><div id="preview_resume" class="preview-text"></div></td>
 			</tr>	
 
@@ -500,7 +502,7 @@ td {
 				<td><label>Other documents (if any):</label></td>
 				<td></td>
 				<td></td>
-				<td><input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_otherdoc')"></td>
+				<td><input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_otherdoc')"></td>
 				<td><div id="preview_otherdoc" class="preview-text"></div></td>
 			</tr>	
 			
@@ -508,7 +510,7 @@ td {
 				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
 				<td></td>
 				<td></td>
-				<td><input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_lor1')"></td>
+				<td><input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_lor1')"></td>
 				<td><div id="preview_lor1" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor1name" id="lor1name"  maxlength="50"> </td>
@@ -523,7 +525,7 @@ td {
 				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
 				<td></td>
 				<td></td>
-				<td><input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_lor2')"></td>
+				<td><input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_lor2')"></td>
 				<td><div id="preview_lor2" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor2name" id="lor2name"  maxlength="50"> </td>
@@ -536,7 +538,7 @@ td {
 				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
 				<td></td>
 				<td></td>
-				<td><input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_lor3')"></td>
+				<td><input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_lor3')"></td>
 				<td><div id="preview_lor3" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="lor3name" id="lor3name"  maxlength="50"> </td>
@@ -564,28 +566,28 @@ td {
 			  <tr>
 			  <td ><label>Experience 1. Date From: </label></td><td ><input type="date" name="Exp1From_date"  ></td>
 			  <td ><label>Date To: </label></td><td ><input type="date" name="Exp1To_date"  ></td>
-			  <td ><input type="file" name="Exp1_Cert" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_Exp1')"></td>
+			  <td ><input type="file" name="Exp1_Cert" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_Exp1')"></td>
 			  <td ><div  id="preview_Exp1" class="preview-text"></div></td>
 			  </tr>
 			  
 			 <tr>
 			  <td><label>Experience 2. Date From: </label></td><td><input type="date" name="Exp2From_date"  ></td>
 			  <td><label>Date To: </label></td><td><input type="date" name="Exp2To_date"  ></td>
-			  <td><input type="file" name="Exp2_Cert" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_Exp2')"></td>
+			  <td><input type="file" name="Exp2_Cert" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_Exp2')"></td>
 			  <td align="bottom"><div id="preview_Exp2" class="preview-text"></div></td>
 			  </tr>
 			  
 			  <tr>
 			  <td><label>Experience 3. Date From: </label></td><td><input type="date" name="Exp3From_date"  ></td>
 			  <td><label>Date To: </label></td><td><input type="date" name="Exp3To_date"  ></td>
-			  <td><input type="file" name="Exp3_Cert" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_Exp3')"></td>
+			  <td><input type="file" name="Exp3_Cert" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_Exp3')"></td>
 			  <td align="bottom"><div id="preview_Exp3" class="preview-text"></div></td>
 			  </tr>
 			  
 			<tr>
 				<td><label>Letter of Recommendation 1 (LOR 1):</label></td>
 				
-				<td><input type="file" name="explor1" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_explor1')"></td>
+				<td><input type="file" name="explor1" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_explor1')"></td>
 				<td><div id="preview_explor1" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor1name" id="explor1name"  maxlength="50"> </td>
@@ -597,7 +599,7 @@ td {
 			<tr>
 				<td><label>Letter of Recommendation 2 (LOR 2):</label></td>
 				
-				<td><input type="file" name="explor2" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_explor2')"></td>
+				<td><input type="file" name="explor2" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_explor2')"></td>
 				<td><div id="preview_explor2" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor2name" id="explor2name"  maxlength="50"> </td>
@@ -609,7 +611,7 @@ td {
 			<tr>
 				<td><label>Letter of Recommendation 3 (LOR 3):</label></td>
 				
-				<td><input type="file" name="explor3" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_explor3')"></td>
+				<td><input type="file" name="explor3" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_explor3')"></td>
 				<td><div id="preview_explor3" class="preview-text"></div></td>
 				
 				<td ><label>Ref.Name: </label></td><td > <input  type="text" name="explor3name" id="explor3name"  maxlength="50"> </td>
@@ -650,7 +652,7 @@ td {
 			  <td ><input step="0.01" min="0" max="100" type="number" name="IELTS_WRITE"></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="IELTS_SPEAK"></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="IELTS_LISTEN"></td>
-			  <td> <input type="file" name="IELTS_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_IELTS')"></td>
+			  <td> <input type="file" name="IELTS_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_IELTS')"></td>
 			  <td align="bottom"><div id="preview_IELTS" class="preview-text"></div></td>
 			</tr>
 			  
@@ -662,7 +664,7 @@ td {
 			  <td ><input step="0.01" min="0" max="100" type="number" name="PTE_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="PTE_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="PTE_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="PTE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_PTE')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="PTE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_PTE')"></td>
 			  <td align="bottom"><div id="preview_PTE" class="preview-text"></div></td>
 			</tr>
 			  
@@ -674,7 +676,7 @@ td {
 			  <td ><input step="0.01" min="0" max="100" type="number" name="TOEFL_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="TOEFL_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="TOEFL_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="TOEFL_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_TOEFL')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="TOEFL_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_TOEFL')"></td>
 			  <td align="bottom"><div id="preview_TOEFL" class="preview-text"></div></td>
 			</tr>
 			
@@ -686,7 +688,7 @@ td {
 			  <td ><input step="0.01" min="0" max="100" type="number" name="LANGCERT_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="LANGCERT_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="LANGCERT_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="LANGCERT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_LANGCERT')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="LANGCERT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_LANGCERT')"></td>
 			  <td align="bottom"><div id="preview_LANGCERT" class="preview-text"></div></td>
 			</tr>
 			
@@ -698,7 +700,7 @@ td {
 			  <td ><input step="0.01" min="0" max="100" type="number" name="DULINGO_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="DULINGO_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="DULINGO_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="DULINGO_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_DULINGO')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="DULINGO_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_DULINGO')"></td>
 			  <td align="bottom"><div id="preview_DULINGO" class="preview-text"></div></td>
 			</tr>
 			
@@ -710,7 +712,7 @@ td {
 			  <td ><input step="0.01" min="0" max="100" type="number" name="ENGOTHER_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="ENGOTHER_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="ENGOTHER_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="ENGOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_ENGOTHER')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="ENGOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_ENGOTHER')"></td>
 			  <td align="bottom"><div id="preview_ENGOTHER" class="preview-text"></div></td>
 			</tr>
 			
@@ -737,7 +739,7 @@ td {
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="GRE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_GRE')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="GRE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_GRE')"></td>
 			  <td align="bottom"><div id="preview_GRE" class="preview-text"></div></td>
 			</tr>
 			
@@ -750,7 +752,7 @@ td {
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="SAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_SAT')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="SAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_SAT')"></td>
 			  <td align="bottom"><div id="preview_SAT" class="preview-text"></div></td>
 			</tr>
 			
@@ -762,7 +764,7 @@ td {
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="GMAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_GMAT')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="GMAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_GMAT')"></td>
 			  <td align="bottom"><div id="preview_GMAT" class="preview-text"></div></td>
 			</tr>
 			<tr>
@@ -773,7 +775,7 @@ td {
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="APTOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_APTOTHER')"></td>
+			  <td> <input step="0.01" min="0" max="100" type="file" name="APTOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"   onchange="previewFile(this, 'preview_APTOTHER')"></td>
 			  <td align="bottom"><div id="preview_APTOTHER" class="preview-text"></div></td>
 			</tr>
 			
@@ -1000,25 +1002,6 @@ function goToTab0() {
 <script>
         let courses = <?= json_encode($records) ?>;
 		
-		/*
-        function renderTable() {
-            const tbody = document.getElementById("courseBody");
-            tbody.innerHTML = "";
-            courses.forEach((c, idx) => {
-                tbody.innerHTML += `<tr style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>${c.University_Name}</td>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>${c.Course_Name}</td>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'><a href="${c.Course_URL}" target="_blank">${c.Course_URL}</a></td>
-                    <td style='height:25px; padding: 1px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                        <button type="button" onclick="editRow(${idx})">Edit</buttonstyle='padding: 12px; border: 1px solid #ccc; text-align: left; position: relative;'>
-                        <button type="button" onclick="deleteRow(${idx})">Delete</button>
-                    </td>
-                  </tr>`;
-            });
-            document.getElementById("coursesInput").value = JSON.stringify(courses);
-        }
-		*/
-	
 		function escapeHtml(text) {
 			const div = document.createElement('div');
 			div.textContent = text;
@@ -1182,16 +1165,20 @@ function goToTab0() {
     const ext = file.name.split('.').pop().toLowerCase();
 	
 	const allowedExtensions = [
-		'jpg',
-		'jpeg',
-		'png',
-		'pdf'
+    'jpg',
+    'jpeg',
+    'png',
+    'pdf',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx'
 	];
 	
 	if (!allowedExtensions.includes(ext)) {
 		showModal({
 			title:"Invalid File",
-			message:"Only JPG, PNG and PDF files are allowed.",
+			message:"Only JPG, PNG, PDF, DOC, DOCX, XLS and XLSX files are allowed.",
 			showOk:true
 		});
 		input.value='';
@@ -1201,28 +1188,51 @@ function goToTab0() {
 
     const validImageTypes = ['jpg', 'jpeg', 'png'];
 
-    if (validImageTypes.includes(ext)) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'preview-img';
-        img.onclick = function() { openModalImage(e.target.result); };
-        preview.appendChild(img);
-      };
-      reader.readAsDataURL(file);
-    } else if (ext === 'pdf') {
-      const span = document.createElement('span');
-      span.textContent = "Click to Open: " + file.name;
-      span.className = 'preview-text';
-      span.onclick = function() {
+	if (validImageTypes.includes(ext)) {
+		const reader = new FileReader();
+		reader.onload = function(e) {
+			const img = document.createElement('img');
+			img.src = e.target.result;
+			img.className = 'preview-img';
+			img.onclick = function() {
+				openModalImage(e.target.result);
+			};
+			preview.appendChild(img);
+		};
+		reader.readAsDataURL(file);
+	}
+	else if (ext === 'pdf') {
+
+    const span = document.createElement('span');
+    span.textContent = "Click to Open: " + file.name;
+    span.className = 'preview-text';
+
+    span.onclick = function () {
         const url = URL.createObjectURL(file);
         openModalPDFInline(url);
-      };
-      preview.appendChild(span);
-    } else {
-      preview.textContent = "Unsupported file type: " + file.name;
-    }
+    };
+
+    preview.appendChild(span);
+	}
+
+	else if (['doc','docx','xls','xlsx'].includes(ext)) {
+
+		const span = document.createElement('span');
+		span.textContent = "Open: " + file.name;
+		span.className = 'preview-text';
+
+		span.onclick = function () {
+
+			const url = URL.createObjectURL(file);
+
+			// Open in a new browser tab.
+			// Browser will either download it or open using Office/Excel if supported.
+			window.open(url, "_blank");
+		};
+
+		preview.appendChild(span);
+	}
+
   }
 
   function openModalImage(src) {

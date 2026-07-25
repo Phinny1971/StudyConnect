@@ -8,6 +8,9 @@ if (!empty($_SERVER['HTTPS'])) {
 
 session_start();
 
+require_once 'includes/helpers.php';
+require_once 'includes/permission_helper.php';
+
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -43,5 +46,25 @@ $_SESSION['last_activity'] = time();
 if (!isset($_SESSION['email'])) {
     forceLogout();
 }
+
+$currentPage = basename($_SERVER['PHP_SELF']);
+
+if (
+    !empty($_SESSION['force_password_change']) &&
+    $_SESSION['force_password_change'] == 1
+)
+{
+    $allowedPages = [
+        'change_password.php',
+        'logout.php'
+    ];
+
+    if (!in_array($currentPage, $allowedPages, true))
+    {
+        redirect('change_password.php');
+    }
+}
+
+
 
 

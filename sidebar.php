@@ -1,56 +1,110 @@
 <!-- sidebar.php -->
 
+<?php
+require_once 'includes/permission_helper.php';
+?>
+
 <div class="sidebar">
 
     <ul>
 
-        <li>
-            <a href="dashboard.php" target="contentFrame">
-                📊 Dashboard
-            </a>
-        </li>
-		<li>
-            <a href="student_form.php" target="contentFrame">
-                📝 New Student
-            </a>
-        </li>
-		
+        <?php if (userCan('dashboard.view')) : ?>
 
-        <li>
-            <a href="student_list.php" target="contentFrame">
-                🎓 Student's List
-            </a>
-        </li>
+            <li>
+                <a href="dashboard.php" target="contentFrame">
+                    📊 Dashboard
+                </a>
+            </li>
 
-		<li>
-            <a href=".php" target="contentFrame">
-                🎯 Shortlisting
-            </a>
-        </li>
+        <?php endif; ?>
 
-		 <li>
-            <a href="messages.php" target="contentFrame">
-                🏛️ Universities
-            </a>
-        </li>
-		
-        <li>
-            <a href="messages.php" target="contentFrame">
-                💬 Messages
-            </a>
-        </li>
 
-        <li>
-            <a href="messages.php" target="contentFrame">
-                📚 Resources
-            </a>
-        </li>
-		
-        <li>
-            <a href="reports.php" target="contentFrame">
-                📈 Reports
-            </a>
-        </li>
+        <?php if (userCan('student.create')) : ?>
+
+            <li>
+                <a href="student_form.php" target="contentFrame">
+                    📝 New Student
+                </a>
+            </li>
+
+        <?php endif; ?>
+
+
+        <?php if (userCan('student.view')) : ?>
+
+            <li>
+                <a href="student_list.php" target="contentFrame">
+                    🎓 Student List
+                </a>
+            </li>
+
+        <?php endif; ?>
+
+
+        <?php if (userCan('shortlisting.view')) : ?>
+
+            <li>
+                <a href="shortlisting.php" target="contentFrame">
+                    🎯 Shortlisting
+                </a>
+            </li>
+
+        <?php endif; ?>
+
+
+        <?php if (userCan('student.view')) : ?>
+
+            <li>
+                <a href="messages.php" target="contentFrame">
+                    🏛️ Universities
+                </a>
+            </li>
+
+            <li>
+                <a href="messages.php" target="contentFrame">
+                    💬 Messages
+                </a>
+            </li>
+
+            <li>
+                <a href="messages.php" target="contentFrame">
+                    📚 Resources
+                </a>
+            </li>
+
+        <?php endif; ?>
+
+
+        <?php if (userCan('reports.view')) : ?>
+
+            <li>
+                <a href="reports.php" target="contentFrame">
+                    📈 Reports
+                </a>
+            </li>
+
+        <?php endif; ?>
+
+
+        <?php if (isAdministrator()) : ?>
+
+            <li class="menu-heading">
+                Administration
+            </li>
+
+            <li>
+                <a href="users_list.php" target="contentFrame">
+                    👥 User Management
+                </a>
+            </li>
+
+            <li>
+                <a href="role_list.php" target="contentFrame">
+                    🔐 Role Management
+                </a>
+            </li>
+
+        <?php endif; ?>
 
     </ul>
 

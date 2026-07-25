@@ -2,29 +2,107 @@
 ob_start();
 session_start();
 
+require_once 'includes/helpers.php';
+require_once 'includes/db_connection.php';
+require_once 'includes/password_helper.php';
+require_once 'includes/permission_helper.php';
+
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+	$email = strtolower(trim($_POST['email'] ?? ''));
+	$password = $_POST['password'] ?? '';
 
-    // TEMP LOGIN
-    if ($email == 'admin@studyconnect.com' && $password == 'admin123') {
-
-		session_regenerate_id(true);
+	$stmt = $conn->prepare("
+		SELECT
+		u.user_id,
+		u.display_name,
+		u.email,
+		u.password_hash,
+		u.status_id,
+		u.force_password_change,
+		s.status_name
+		FROM users u
+		INNER JOIN account_statuses s
+			ON s.status_id = u.status_id
+		WHERE u.email = ?
+	");
 	
-        $_SESSION['user_name'] = 'Administrator';
-        $_SESSION['email'] = $email;
-		$_SESSION['login_time'] = time();
-		$_SESSION['last_activity'] = time();
+if (!$stmt) {
+    die("Database error: " . $conn->error);
+}
 
-        header('Location: main.php');
-        exit;
+$stmt->bind_param("s", $email);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+if ($user = $result->fetch_assoc()) {
+
+    if (strtolower($user['status_name']) !== 'active') {
+
+        $error = "Your account is not active.";
+
+    }
+    elseif (verifyPassword($password, $user['password_hash'])) {
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['user_name'] = $user['display_name'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['status_id'] = $user['status_id'];
+		$_SESSION['permissions'] = getUserPermissions($conn, (int)$user['user_id']);
+		$_SESSION['roles'] = getUserRoles($conn, (int)$user['user_id'] );
+        $_SESSION['login_time'] = time();
+        $_SESSION['last_activity'] = time();
+		$_SESSION['force_password_change'] = (int)$user['force_password_change'];
+
+		$updateStmt = $conn->prepare("
+			UPDATE users
+			SET last_login_at = NOW()
+			WHERE user_id = ?
+		");
+
+		if (!$updateStmt) {
+			die("Database error: " . $conn->error);
+		}
+
+        $updateStmt->bind_param("i", $user['user_id']);
+		$updateStmt->execute();
+		$updateStmt->close();
+
+		$stmt->close();
+		$conn->close();
+
+        if ($_SESSION['force_password_change'] === 1)
+		{
+			header("Location: change_password.php");
+			exit;
+		}
+
+		redirect('main.php');
+		exit;
+
+    }
+    else {
+
+        $error = "Invalid email or password.";
+
     }
 
-    $error = "Invalid Login";
+}
+else {
+
+    $error = "Invalid email or password.";
+
+}
+
+$stmt->close();
+$conn->close();
 }
 ?>
 
@@ -104,10 +182,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <button type="submit">Login</button>
 
-            <div class="demo-login">
-                Demo Login:<br>
-                admin@studyconnect.com / admin123
-            </div>
+			<div class="login-help">
+				Please sign in using your StudyConnect account.
+			</div>
 
         </form>
 

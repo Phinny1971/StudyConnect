@@ -1,5 +1,7 @@
 <?php
 require_once 'session_check.php';
+requirePermission('student.delete');
+require_once 'includes/db_connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -18,24 +20,24 @@ if (
     exit('Invalid request');
 }
 
-
+/*
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+*/
 
 
-/*
 $host = "localhost";
 $dbname = "studyconnect";
 $username = "StudyConnect";
 $password = "Study@2025";
-*/
+
 
 // Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+//$conn = mysqli_connect($host, $user, $password, $database, $port);
+$conn = new mysqli($host, $username, $password, $dbname);
 
 if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);

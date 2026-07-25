@@ -1,23 +1,25 @@
 <?php
 require_once 'session_check.php';
+requirePermission('student.edit');
+require_once 'includes/db_connection.php';
 
-
+/*
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+*/
 
-/*
 $host = "localhost";
 $dbname = "studyconnect";
 $username = "StudyConnect";
 $password = "Study@2025";
-*/
+
 
 // Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+//$conn = mysqli_connect($host, $user, $password, $database, $port);
+$conn = new mysqli($host, $username, $password, $dbname);
 
 
 if ($conn->connect_error) {
@@ -180,15 +182,15 @@ $conn->close();
     }
 
     input[type="text"],
-    input[type="email"],
-    input[type="number"],
-    select,
-    input[type="file"] {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-    }
+	input[type="email"],
+	input[type="number"],
+	select {
+		width:100%;
+		box-sizing:border-box;
+	}
+	input[type="file"] {
+		max-width:220px;
+	}
 
     button[type="submit"] {
       margin-top: 20px;
@@ -202,37 +204,42 @@ $conn->close();
       padding-top: 10px;
     }
 
-.preview-img {
-  max-width: 50px;
-  max-height: 50px;
-  display: block;
-  margin-top: 5px;
-}
-.preview-text {
-  font-style: italic;
-  font-size: 14px;
-  color: #555;
-}
-
   </style>
   
   <style>
-  .preview-img {
-    max-width: 50px;
-    max-height: 50px;
+ .preview-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
     display: block;
     margin-top: 5px;
     cursor: pointer;
     border: 1px solid #ccc;
-  }
+    border-radius: 4px;
+}
 
-  .preview-text {
-    font-style: italic;
-    font-size: 14px;
-    color: #555;
-    margin-top: 5px;
+.preview-text {
+    display: inline-block;
+    max-width: 180px;
+    color: #0d6efd;
+    text-decoration: underline;
     cursor: pointer;
-  }
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.upload-preview-cell{
+    width:200px;
+    vertical-align:middle;
+}
+.upload-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
   .modal {
     display: none;
@@ -348,17 +355,9 @@ $conn->close();
 	 <td><label>Name: </label></td><td> <input type="text" name="name" id="name" class="required" maxlength="50" 
 	 value="<?php echo htmlspecialchars($student['name']); ?>"> </td>
 	 
-	 
-	 <!-- 
-	 <td><label>Passport No.: </label></td>	 <td> <input type="text" name="Passport_no" maxlength="50" class="required" value="<?php echo htmlspecialchars($student['Passport_no']); ?>"> </td>
-	 <td><input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_passport')" class="required" value="<?php echo htmlspecialchars($student['Passport_Upload']); ?>"></td>
-	 <td><div id="preview_passport" class="preview-text"></div></td>
-	 -->
-	 
-	 
 	 <td style="width:50px;"></td><td style="width:200px;"><label>Passport No.: </label></td><td> <input type="text" name="Passport_no" maxlength="50" class="required" value="<?php echo htmlspecialchars($student['Passport_no']); ?>"> </td>
 	  <td>
-	  <input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_passport')"  value="<?php echo htmlspecialchars($student['Passport_Upload']); ?>">
+	  <input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_passport')"  value="<?php echo htmlspecialchars($student['Passport_Upload']); ?>">
 	  
 	  <input type="hidden" name="existing_Passport_Upload"
        value="<?php echo htmlspecialchars($student['Passport_Upload'] ?? ''); ?>">
@@ -375,7 +374,7 @@ $conn->close();
 		<?php endif; ?>
 	  </td>
 	 
-	<td><div id="preview_passport" class="preview-text"></div></td>
+	<td class="upload-preview-cell"><div id="preview_passport" class="preview-text"></div></td>
 
 
 	 </tr>
@@ -523,7 +522,7 @@ $conn->close();
 		 <td > <input  type="text" name="immi_country" id="immi_country"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['immi_country'] ?? ''); ?>"> </td>
 		 
 		 		<td>
-				<input type="file" name="immi_country_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_immi_country_file')">
+				<input type="file" name="immi_country_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_immi_country_file')">
 				 <input type="hidden" name="existing_immi_country_file" value="<?php echo htmlspecialchars($studentotherdetails['immi_country_file'] ?? ''); ?>">
 				</td>
 					<td>
@@ -546,7 +545,7 @@ $conn->close();
 		 <td > <input  type="text" name="medical_cond" id="medical_cond"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['medical_cond'] ?? ''); ?>" > </td>
 		 
 		 		<td>
-				<input type="file" name="medical_cond_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_medical_cond_file')">
+				<input type="file" name="medical_cond_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_medical_cond_file')">
 				 <input type="hidden" name="existing_medical_cond_file" value="<?php echo htmlspecialchars($studentotherdetails['medical_cond_file'] ?? ''); ?>">
 				</td>
 					<td>
@@ -569,7 +568,7 @@ $conn->close();
 		 <td > <input  type="text" name="visa_refusal" id="visa_refusal"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['visa_refusal'] ?? ''); ?>" > </td>
 		 
 				<td>
-				<input type="file" name="visa_refusal_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_visa_refusal_file')">
+				<input type="file" name="visa_refusal_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_visa_refusal_file')">
 				 <input type="hidden" name="existing_visa_refusal_file" value="<?php echo htmlspecialchars($studentotherdetails['visa_refusal_file'] ?? ''); ?>">
 				</td>
 					<td>
@@ -592,7 +591,7 @@ $conn->close();
 		 <td > <input  type="text" name="convicted_offence" id="convicted_offence"  maxlength="500" value="<?php echo htmlspecialchars($studentotherdetails['convicted_offence'] ?? ''); ?>" > </td>
 		 
 				<td>
-				<input type="file" name="convicted_offence_file" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_convicted_offence_file')">
+				<input type="file" name="convicted_offence_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_convicted_offence_file')">
 				 <input type="hidden" name="existing_convicted_offence_file" value="<?php echo htmlspecialchars($studentotherdetails['convicted_offence_file'] ?? ''); ?>">
 				</td>
 					<td>
@@ -621,7 +620,7 @@ $conn->close();
 		  <table>
 			  <tr><td><label>10th Marks (%): </label></td><td><input type="number" name="marks_10th" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_10th']); ?>" ></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_10th" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_10th')">
+			  <td><input type="file" name="cert_10th" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_10th')">
 			  <input type="hidden" name="existing_cert_10th" value="<?php echo htmlspecialchars($student['cert_10th'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -638,7 +637,7 @@ $conn->close();
 			  
 			  <tr><td><label>Intermediate Marks (%):</label></td><td><input type="number" name="marks_intermediate" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_intermediate']); ?>" ></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_intermediate" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_intermediate')" >
+			  <td><input type="file" name="cert_intermediate" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_intermediate')" >
 			  <input type="hidden" name="existing_cert_intermediate" value="<?php echo htmlspecialchars($student['cert_intermediate'] ?? ''); ?>">
 			  </td>
 			   <td>
@@ -655,7 +654,7 @@ $conn->close();
 			  
 			  <tr><td><label>Degree Marks (%): </label></td><td><input type="number" name="marks_degree" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_degree']); ?>"></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_degree" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_Degree')" >
+			  <td><input type="file" name="cert_degree" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_Degree')" >
 			  <input type="hidden" name="existing_cert_degree" value="<?php echo htmlspecialchars($student['cert_degree'] ?? ''); ?>">
 			  </td>
 			   <td>
@@ -672,7 +671,7 @@ $conn->close();
 			  
 			  <tr><td><label>Post Graduation Marks (%):</label> </td><td><input type="number" name="marks_pg" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_pg']); ?>"></td>
 			  <td><label>Certificate: </label></td>
-			  <td><input type="file" name="cert_pg" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_PG')">
+			  <td><input type="file" name="cert_pg" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_PG')">
 			  <input type="hidden" name="existing_cert_pg" value="<?php echo htmlspecialchars($student['cert_pg'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -689,7 +688,7 @@ $conn->close();
 			  
 			  <tr><td><label>Diploma Marks (%):</label> </td><td><input type="number" name="marks_diploma" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_diploma']); ?>"></td>
 			  <td><label>Certificate:</label></td>
-			  <td> <input type="file" name="cert_diploma" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_Diploma')">
+			  <td> <input type="file" name="cert_diploma" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_Diploma')">
 			  <input type="hidden" name="existing_cert_diploma" value="<?php echo htmlspecialchars($student['cert_diploma'] ?? ''); ?>">
 			  </td>
 			   <td>
@@ -707,7 +706,7 @@ $conn->close();
 			  <tr><td><label>Other Marks (%):</label></td><td><input type="number" name="marks_other" step="0.01" min="0" max="100" value="<?php echo htmlspecialchars($student['marks_other']); ?>"></td>
 			  <td><label>Certificate: </label></td>
 			  <td>
-			  <input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_Other')">
+			  <input type="file" name="cert_other" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_Other')">
 			  <input type="hidden" name="existing_cert_other" value="<?php echo htmlspecialchars($student['cert_other'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -727,7 +726,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="moi" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_moi')">
+				<input type="file" name="moi" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_moi')">
 				 <input type="hidden" name="existing_moi" value="<?php echo htmlspecialchars($studentotherdetails['moi'] ?? ''); ?>">
 				</td>
 					<td>
@@ -747,7 +746,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="resume" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_resume')">
+				<input type="file" name="resume" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_resume')">
 				 <input type="hidden" name="existing_resume" value="<?php echo htmlspecialchars($studentotherdetails['resume'] ?? ''); ?>">
 				</td>
 					<td>
@@ -767,7 +766,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_otherdoc')">
+				<input type="file" name="otherdoc" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_otherdoc')">
 				 <input type="hidden" name="existing_otherdoc" value="<?php echo htmlspecialchars($studentotherdetails['otherdoc'] ?? ''); ?>">
 				</td>
 					<td>
@@ -788,7 +787,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_lor1')">
+				<input type="file" name="lor1" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_lor1')">
 				 <input type="hidden" name="existing_lor1" value="<?php echo htmlspecialchars($studentotherdetails['lor1'] ?? ''); ?>">
 				</td>
 					<td>
@@ -820,7 +819,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_lor2')">
+				<input type="file" name="lor2" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_lor2')">
 				 <input type="hidden" name="existing_lor2" value="<?php echo htmlspecialchars($studentotherdetails['lor2'] ?? ''); ?>">
 				</td>
 					<td>
@@ -851,7 +850,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_lor3')">
+				<input type="file" name="lor3" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_lor3')">
 				 <input type="hidden" name="existing_lor3" value="<?php echo htmlspecialchars($studentotherdetails['lor3'] ?? ''); ?>">
 				</td>
 					<td>
@@ -894,7 +893,7 @@ $conn->close();
 			  <tr>
 			  <td ><label>Experience 1. Date From: </label></td><td ><input type="date" name="Exp1From_date" value="<?php echo htmlspecialchars($student['Exp1From_date']); ?>" ></td>
 			  <td ><label>Date To: </label></td><td ><input type="date" name="Exp1To_date" value="<?php echo htmlspecialchars($student['Exp1To_date']); ?>" ></td>
-			  <td ><input type="file" name="Exp1_Cert" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_Exp1')">
+			  <td ><input type="file" name="Exp1_Cert" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_Exp1')">
 			  <input type="hidden" name="existing_Exp1_Cert" value="<?php echo htmlspecialchars($student['Exp1_Cert'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -912,7 +911,7 @@ $conn->close();
 			 <tr>
 			  <td><label>Experience 2. Date From: </label></td><td><input type="date" name="Exp2From_date" value="<?php echo htmlspecialchars($student['Exp2From_date']); ?>" ></td>
 			  <td><label>Date To: </label></td><td><input type="date" name="Exp2To_date" value="<?php echo htmlspecialchars($student['Exp2To_date']); ?>" ></td>
-			  <td><input type="file" name="Exp2_Cert" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_Exp2')">
+			  <td><input type="file" name="Exp2_Cert" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_Exp2')">
 			  <input type="hidden" name="existing_Exp2_Cert" value="<?php echo htmlspecialchars($student['Exp2_Cert'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -930,7 +929,7 @@ $conn->close();
 			  <tr>
 			  <td><label>Experience 3. Date From: </label></td><td><input type="date" name="Exp3From_date" value="<?php echo htmlspecialchars($student['Exp3From_date']); ?>" ></td>
 			  <td><label>Date To: </label></td><td><input type="date" name="Exp3To_date" value="<?php echo htmlspecialchars($student['Exp3To_date']); ?>" ></td>
-			  <td><input type="file" name="Exp3_Cert" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_Exp3')">
+			  <td><input type="file" name="Exp3_Cert" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_Exp3')">
 			  <input type="hidden" name="existing_Exp3_Cert" value="<?php echo htmlspecialchars($student['Exp3_Cert'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -950,7 +949,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="explor1" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_explor1')">
+				<input type="file" name="explor1" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_explor1')">
 				 <input type="hidden" name="existing_explor1" value="<?php echo htmlspecialchars($studentotherdetails['explor1'] ?? ''); ?>">
 				</td>
 					<td>
@@ -982,7 +981,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="explor2" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_explor2')">
+				<input type="file" name="explor2" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_explor2')">
 				 <input type="hidden" name="existing_explor2" value="<?php echo htmlspecialchars($studentotherdetails['explor2'] ?? ''); ?>">
 				</td>
 					<td>
@@ -1014,7 +1013,7 @@ $conn->close();
 				<td></td>
 				<td></td>
 				<td>
-				<input type="file" name="explor3" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="previewFile(this, 'preview_explor3')">
+				<input type="file" name="explor3" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="previewFile(this, 'preview_explor3')">
 				 <input type="hidden" name="existing_explor3" value="<?php echo htmlspecialchars($studentotherdetails['explor3'] ?? ''); ?>">
 				</td>
 					<td>
@@ -1073,7 +1072,7 @@ $conn->close();
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['IELTS_WRITE'] ?? ''); ?>" name="IELTS_WRITE"></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['IELTS_SPEAK'] ?? ''); ?>" name="IELTS_SPEAK"></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['IELTS_LISTEN'] ?? ''); ?>" name="IELTS_LISTEN"></td>
-			  <td> <input type="file" name="IELTS_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_IELTS')">
+			  <td> <input type="file" name="IELTS_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_IELTS')">
 			  <input type="hidden" name="existing_IELTS_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['IELTS_UPLOAD'] ?? ''); ?>">
 			  </td>
 			   <td>
@@ -1096,7 +1095,7 @@ $conn->close();
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['PTE_WRITE'] ?? ''); ?>" name="PTE_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['PTE_SPEAK'] ?? ''); ?>" name="PTE_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['PTE_LISTEN'] ?? ''); ?>" name="PTE_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="PTE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_PTE')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="PTE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_PTE')">
 			   <input type="hidden" name="existing_PTE_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['PTE_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1119,7 +1118,7 @@ $conn->close();
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['TOEFL_WRITE'] ?? ''); ?>" name="TOEFL_WRITE"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['TOEFL_SPEAK'] ?? ''); ?>" name="TOEFL_SPEAK"  ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" value="<?php echo htmlspecialchars($studentlanguagetests['TOEFL_LISTEN'] ?? ''); ?>" name="TOEFL_LISTEN"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="TOEFL_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_TOEFL')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="TOEFL_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_TOEFL')">
 			  <input type="hidden" name="existing_TOEFL_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['TOEFL_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1142,7 +1141,7 @@ $conn->close();
 			  <td ><input step="0.01" min="0" max="100" type="number" name="LANGCERT_WRITE" value="<?php echo htmlspecialchars($studentlanguagetests['LANGCERT_WRITE'] ?? ''); ?>"></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="LANGCERT_SPEAK" value="<?php echo htmlspecialchars($studentlanguagetests['LANGCERT_SPEAK'] ?? ''); ?>"></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="LANGCERT_LISTEN" value="<?php echo htmlspecialchars($studentlanguagetests['LANGCERT_LISTEN'] ?? ''); ?>"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="LANGCERT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_LANGCERT')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="LANGCERT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_LANGCERT')">
 			  <input type="hidden" name="existing_LANGCERT_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['LANGCERT_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1165,7 +1164,7 @@ $conn->close();
 			  <td ><input step="0.01" min="0" max="100" type="number" name="DULINGO_WRITE"  value="<?php echo htmlspecialchars($studentlanguagetests['DULINGO_WRITE'] ?? ''); ?>" ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="DULINGO_SPEAK"  value="<?php echo htmlspecialchars($studentlanguagetests['DULINGO_SPEAK'] ?? ''); ?>" ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="DULINGO_LISTEN" value="<?php echo htmlspecialchars($studentlanguagetests['DULINGO_LISTEN'] ?? ''); ?>"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="DULINGO_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_DULINGO')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="DULINGO_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_DULINGO')">
 			  <input type="hidden" name="existing_DULINGO_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['DULINGO_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1188,7 +1187,7 @@ $conn->close();
 			  <td ><input step="0.01" min="0" max="100" type="number" name="ENGOTHER_WRITE" value="<?php echo htmlspecialchars($studentlanguagetests['ENGOTHER_WRITE'] ?? ''); ?>" ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="ENGOTHER_SPEAK" value="<?php echo htmlspecialchars($studentlanguagetests['ENGOTHER_SPEAK'] ?? ''); ?>" ></td>
 			  <td ><input step="0.01" min="0" max="100" type="number" name="ENGOTHER_LISTEN" value="<?php echo htmlspecialchars($studentlanguagetests['ENGOTHER_LISTEN'] ?? ''); ?>"  ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="ENGOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_ENGOTHER')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="ENGOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_ENGOTHER')">
 			  <input type="hidden" name="existing_ENGOTHER_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['ENGOTHER_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1227,7 +1226,7 @@ $conn->close();
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="GRE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_GRE')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="GRE_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_GRE')">
 			  <input type="hidden" name="existing_GRE_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['GRE_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1251,7 +1250,7 @@ $conn->close();
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="SAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_SAT')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="SAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_SAT')">
 			  <input type="hidden" name="existing_SAT_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['SAT_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1274,7 +1273,7 @@ $conn->close();
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="GMAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_GMAT')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="GMAT_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_GMAT')">
 			  <input type="hidden" name="existing_GMAT_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['GMAT_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1296,7 +1295,7 @@ $conn->close();
 			  <td ></td>
 			  <td ></td>
 			  <td ></td>
-			  <td> <input step="0.01" min="0" max="100" type="file" name="APTOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"  onchange="previewFile(this, 'preview_APTOTHER')">
+			  <td> <input step="0.01" min="0" max="100" type="file" name="APTOTHER_UPLOAD" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_APTOTHER')">
 			  <input type="hidden" name="existing_APTOTHER_UPLOAD" value="<?php echo htmlspecialchars($studentlanguagetests['APTOTHER_UPLOAD'] ?? ''); ?>">
 			  </td>
 			  <td>
@@ -1735,7 +1734,7 @@ window.onload = renderTable;
 ==========================================
 */
 
-
+/*
 function previewFile(input, previewId) {
   const preview = document.getElementById(previewId);
   preview.innerHTML = '';
@@ -1795,7 +1794,201 @@ function previewFile(input, previewId) {
     }
   }
 }
+*/
 
+function shortenFileName(fileName, maxLength = 30) {
+
+    const dotIndex = fileName.lastIndexOf('.');
+
+    // No extension or already short enough
+    if (dotIndex === -1 || fileName.length <= maxLength) {
+        return fileName;
+    }
+    const name = fileName.substring(0, dotIndex);
+    const extension = fileName.substring(dotIndex);
+    const allowedLength = maxLength - extension.length - 3; // 3 for "..."
+    return name.substring(0, allowedLength) + "..." + extension;
+}
+
+
+function previewFile(input, previewId) {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+
+    let file;
+    let ext;
+
+    if (input instanceof HTMLInputElement) {
+
+        file = input.files[0];
+
+        if (!file) return;
+		
+		const maxSize = 5 * 1024 * 1024; // 5 MB
+
+		if (file.size > maxSize) {
+			showModal({
+				title: "File Too Large",
+				message:
+					"<strong>" + file.name + "</strong> exceeds the maximum allowed file size of <strong>5 MB</strong>.",
+				showOk: true,
+				onOk: function () {
+					input.value = "";
+					preview.innerHTML = "";
+				}
+			});
+			return;
+		}
+
+        ext = file.name.split('.').pop().toLowerCase();
+
+        if (['jpg', 'jpeg', 'png'].includes(ext)) {
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+
+                const img = document.createElement('img');
+
+                img.src = e.target.result;
+                img.className = 'preview-img';
+
+                img.onclick = function () {
+                    openModalImage(e.target.result);
+                };
+
+                preview.appendChild(img);
+            };
+
+            reader.readAsDataURL(file);
+
+        }
+        else if (ext === 'pdf') {
+
+            const span = document.createElement('span');
+
+            span.textContent = "Click to Open: " + file.name;
+            span.className = 'preview-text';
+
+            span.onclick = function () {
+
+                const url = URL.createObjectURL(file);
+                openModalPDFInline(url);
+
+            };
+
+            preview.appendChild(span);
+
+        }
+        else if (['doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
+
+            const span = document.createElement('span');
+
+            span.textContent = "Click to Open: " + file.name;
+            span.className = 'preview-text';
+
+            span.onclick = function () {
+
+                const url = URL.createObjectURL(file);
+                window.open(url, '_blank');
+
+            };
+
+            preview.appendChild(span);
+
+        }
+        else {
+			showModal({
+				title: "Invalid File Type",
+				message:
+					"<strong>" + file.name + "</strong> is not a supported file type.<br><br>" +
+					"Allowed file types are:<br>" +
+					"• JPG<br>" +
+					"• JPEG<br>" +
+					"• PNG<br>" +
+					"• PDF<br>" +
+					"• DOC<br>" +
+					"• DOCX<br>" +
+					"• XLS<br>" +
+					"• XLSX",
+				showOk: true,
+				onOk: function () {
+					input.value = "";
+					preview.innerHTML = "";
+				}
+			});
+
+        }
+
+    }
+    else if (typeof input === 'string') {
+
+        const fileUrl = input;
+
+        ext = input.split('.').pop().toLowerCase();
+
+        if (['jpg', 'jpeg', 'png'].includes(ext)) {
+
+            const img = document.createElement('img');
+
+            img.src = fileUrl;
+            img.className = 'preview-img';
+
+            img.onclick = function () {
+                openModalImage(fileUrl);
+            };
+
+            preview.appendChild(img);
+
+        }
+        else if (ext === 'pdf') {
+
+            const span = document.createElement('span');
+
+           	const fileName = fileUrl
+			.split('/')
+			.pop()
+			.replace(/^[^_]+_/, '');
+			
+			span.textContent = fileName;
+            span.className = 'preview-text';
+
+            span.onclick = function () {
+                openModalPDFInline(fileUrl);
+            };
+
+            preview.appendChild(span);
+
+        }
+        else if (['doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
+
+            const span = document.createElement('span');
+
+            const fileName = fileUrl
+				.split('/')
+				.pop()
+				.replace(/^[^_]+_/, '');
+
+			span.textContent = shortenFileName(fileName);
+			span.title = fileName;          // Show full filename on hover
+			span.className = 'preview-text';
+
+            span.onclick = function () {
+                window.open(fileUrl, '_blank');
+            };
+
+            preview.appendChild(span);
+
+        }
+        else {
+
+            preview.textContent = "Unsupported file";
+
+        }
+
+    }
+
+}
 
 
   function openModalImage(src) {

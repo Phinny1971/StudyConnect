@@ -3,6 +3,8 @@ ob_start();
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 require_once 'session_check.php';
+requirePermission('student.edit');
+require_once 'includes/db_connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: student_list.php");
@@ -47,23 +49,23 @@ function dateOrNull($value) {
         : $value;
 }
 
-
+/*
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+*/
 
-/*
 $host = "localhost";
 $dbname = "studyconnect";
 $username = "StudyConnect";
 $password = "Study@2025";
-*/
+
 
 // Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+//$conn = mysqli_connect($host, $user, $password, $database, $port);
+$conn = new mysqli($host, $username, $password, $dbname);
 
 
 if (!$conn) {
@@ -159,6 +161,7 @@ if (!file_exists($uploadDir)) {
 }
 
 // ================= FILE UPLOAD FUNCTION =================
+/*
 function uploadFile($fieldName, $existingFile = "") {
   global $uploadDir;
 
@@ -178,6 +181,73 @@ function uploadFile($fieldName, $existingFile = "") {
   }
 
   return $existingFile;
+}
+*/
+
+function uploadFile($fieldName, $existingFile = "")
+{
+    global $uploadDir;
+
+    if (
+        !isset($_FILES[$fieldName]) ||
+        $_FILES[$fieldName]['error'] == UPLOAD_ERR_NO_FILE
+    ) {
+        return $existingFile;
+    }
+
+    if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception("Error uploading file: " . $fieldName);
+    }
+
+    $allowedExtensions = [
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx'
+    ];
+
+    $extension = strtolower(
+        pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION)
+    );
+
+    if (!in_array($extension, $allowedExtensions)) {
+        throw new Exception(
+            "Invalid file type for " .
+            $_FILES[$fieldName]['name']
+        );
+    }
+
+    $maxSize = 5 * 1024 * 1024;
+
+    if ($_FILES[$fieldName]['size'] > $maxSize) {
+        throw new Exception(
+            $_FILES[$fieldName]['name'] .
+            " exceeds the maximum upload size of 5 MB."
+        );
+    }
+
+    $newFileName =
+        uniqid() . "_" .
+        preg_replace(
+            "/[^A-Za-z0-9._-]/",
+            "_",
+            basename($_FILES[$fieldName]['name'])
+        );
+
+    $targetPath = $uploadDir . $newFileName;
+
+    if (!move_uploaded_file($_FILES[$fieldName]['tmp_name'], $targetPath)) {
+        throw new Exception(
+            "Unable to save uploaded file: " .
+            $_FILES[$fieldName]['name']
+        );
+    }
+
+    return $targetPath;
 }
 
 // ================= START =================
@@ -558,17 +628,17 @@ function saveOtherDetails($conn, $student_id, $Country_code)
     $gender          = nullIfEmpty($_POST['gender'] ?? null);
     $maritalstatus   = nullIfEmpty($_POST['maritalstatus'] ?? null);
 
-    $lor1      = nullIfEmpty(uploadFile('lor1'));
-    $lor2      = nullIfEmpty(uploadFile('lor2'));
-    $lor3      = nullIfEmpty(uploadFile('lor3'));
-    $moi       = nullIfEmpty(uploadFile('moi'));
-    $resume    = nullIfEmpty(uploadFile('resume'));
-    $otherdoc  = nullIfEmpty(uploadFile('otherdoc'));
+    $lor1      = getUploadedFileOrExisting('lor1');
+    $lor2      = getUploadedFileOrExisting('lor2');
+    $lor3      = getUploadedFileOrExisting('lor3');
+    $moi       = getUploadedFileOrExisting('moi');
+    $resume    = getUploadedFileOrExisting('resume');
+    $otherdoc  = getUploadedFileOrExisting('otherdoc');
 	
-	$immi_country_file       = nullIfEmpty(uploadFile('immi_country_file'));
-	$medical_cond_file       = nullIfEmpty(uploadFile('medical_cond_file'));
-	$visa_refusal_file       = nullIfEmpty(uploadFile('visa_refusal_file'));
-	$convicted_offence_file  = nullIfEmpty(uploadFile('convicted_offence_file'));
+	$immi_country_file       = getUploadedFileOrExisting('immi_country_file');
+	$medical_cond_file       = getUploadedFileOrExisting('medical_cond_file');
+	$visa_refusal_file       = getUploadedFileOrExisting('visa_refusal_file');
+	$convicted_offence_file  = getUploadedFileOrExisting('convicted_offence_file');
 	
 	$lor1name 			= nullIfEmpty($_POST['lor1name'] ?? null);
 	$lor1email			= nullIfEmpty($_POST['lor1email'] ?? null);
@@ -590,9 +660,9 @@ function saveOtherDetails($conn, $student_id, $Country_code)
 	$explor3email		= nullIfEmpty($_POST['explor3email'] ?? null);	
 	$explor3phone		= nullIfEmpty($_POST['explor3phone'] ?? null);	
 	
-	$explor1 		=nullIfEmpty(uploadFile('explor1'));
-	$explor2 		=nullIfEmpty(uploadFile('explor2'));
-	$explor3 		=nullIfEmpty(uploadFile('explor3'));
+	$explor1 		=getUploadedFileOrExisting('explor1');
+	$explor2 		=getUploadedFileOrExisting('explor2');
+	$explor3 		=getUploadedFileOrExisting('explor3');
 
     $sql = "
     INSERT INTO studentotherdetails

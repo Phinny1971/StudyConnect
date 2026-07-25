@@ -1,5 +1,7 @@
 <?php
 require_once 'session_check.php';
+requirePermission('student.create');
+require_once 'includes/db_connection.php';
 
 if (
     !isset($_POST['csrf_token']) ||
@@ -92,24 +94,24 @@ function closeMsgModal() {
 </script>
 
 <?php
-
+/*
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $password = getenv('MYSQLPASSWORD');
 $database = getenv('MYSQLDATABASE');
 $port = getenv('MYSQLPORT');
+*/
 
 
-/*
 $host = "localhost";
 $dbname = "studyconnect";
 $username = "StudyConnect";
 $password = "Study@2025";
-*/
+
 
 // Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+//$conn = mysqli_connect($host, $user, $password, $database, $port);
+$conn = new mysqli($host, $username, $password, $dbname);
 
 
 
@@ -178,27 +180,32 @@ $result = $stmt->get_result();
 //-------------------------------
 
 if ($result->num_rows === 0) {
-/*
-function uploadFile($fieldName) {
-  global $uploadDir;
-  if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] != 0) return "";
-
-  $allowed = ['pdf', 'jpg', 'jpeg', 'png'];
-  $ext = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
-  if (!in_array($ext, $allowed)) return "";
-
-  $newFileName = uniqid() . '_' . basename($_FILES[$fieldName]["name"]);
-  $targetPath = $uploadDir . $newFileName;
-  if (move_uploaded_file($_FILES[$fieldName]["tmp_name"], $targetPath)) {
-    return $targetPath;
-  }
-  return "";
-}
-*/
 
 function uploadFile($fieldName)
 {
+	
     global $uploadDir;
+	
+    if (
+        !isset($_FILES[$fieldName]) ||
+        $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK ||
+        empty($_FILES[$fieldName]['tmp_name'])
+    ) {
+        return null;
+    }
+
+    if (!is_uploaded_file($_FILES[$fieldName]['tmp_name'])) {
+        throw new Exception(
+            "Uploaded file is missing or invalid for field: " . $fieldName
+        );
+    }
+
+    if (!file_exists($_FILES[$fieldName]['tmp_name'])) {
+        throw new Exception(
+            "Temporary upload file not found for field: " . $fieldName
+        );
+    }
+
     if (
         !isset($_FILES[$fieldName]) ||
         $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK
@@ -494,7 +501,6 @@ $SAT_UPLOAD= nullIfEmpty(uploadFile('SAT_UPLOAD') ?? null);
 $GRE_UPLOAD= nullIfEmpty(uploadFile('GRE_UPLOAD') ?? null);
 $DULINGO_UPLOAD= nullIfEmpty(uploadFile('DULINGO_UPLOAD') ?? null);
 $LANGCERT_UPLOAD= nullIfEmpty(uploadFile('LANGCERT_UPLOAD') ?? null);
-$IELTS_UPLOAD= nullIfEmpty(uploadFile('IELTS_UPLOAD') ?? null);
 $PTE_UPLOAD= nullIfEmpty(uploadFile('PTE_UPLOAD') ?? null);
 $TOEFL_UPLOAD= nullIfEmpty(uploadFile('TOEFL_UPLOAD') ?? null);
 
