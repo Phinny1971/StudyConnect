@@ -187,7 +187,7 @@ $user = $userSummary;
 include 'includes/user_summary_card.php';
 exit;
 
-include 'includes/admin_action_tabs.php';
+//include 'includes/admin_action_tabs.php';
 
 ?>
 
