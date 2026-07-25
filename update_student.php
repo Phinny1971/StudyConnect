@@ -196,7 +196,13 @@ function uploadFile($fieldName, $existingFile = "")
     }
 
     if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception("Error uploading file: " . $fieldName);
+       	throw new Exception(
+		    "Error uploading file: " .
+		    $fieldName .
+		    " (PHP Upload Error Code: " .
+		    $_FILES[$fieldName]['error'] .
+		    ")"
+		);
     }
 
     $allowedExtensions = [
