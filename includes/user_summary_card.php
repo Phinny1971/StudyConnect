@@ -1,4 +1,10 @@
 <?php
+die("USER SUMMARY CARD VERSION 1");
+
+if (!isset($user))
+{
+    return;
+}
 /******************************************************************************
  * StudyConnect
  *
