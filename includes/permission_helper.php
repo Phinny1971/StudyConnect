@@ -28,8 +28,7 @@ function getUserPermissions(mysqli $conn, int $userId): array
 
     $permissions = [];
 
-    $sql = "
-        $sql = "SELECT DISTINCT
+    $sql = "SELECT DISTINCT
 			   p.permission_key,
 			   p.display_order
 		FROM user_roles ur
