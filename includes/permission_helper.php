@@ -29,20 +29,22 @@ function getUserPermissions(mysqli $conn, int $userId): array
     $permissions = [];
 
     $sql = "
-        SELECT DISTINCT
-               p.permission_key
-        FROM user_roles ur
-        INNER JOIN role_permissions rp
-                ON rp.role_id = ur.role_id
-        INNER JOIN permissions p
-                ON p.permission_id = rp.permission_id
-        WHERE ur.user_id = ?
-          AND ur.is_active = 1
-          AND rp.is_active = 1
-          AND p.is_active = 1
-        ORDER BY
-              p.display_order,
-              p.permission_key
+        $sql = "SELECT DISTINCT
+			   p.permission_key,
+			   p.display_order
+		FROM user_roles ur
+		INNER JOIN role_permissions rp
+				ON rp.role_id = ur.role_id
+		INNER JOIN permissions p
+				ON p.permission_id = rp.permission_id
+		WHERE ur.user_id = ?
+		  AND ur.is_active = 1
+		  AND rp.is_active = 1
+		  AND p.is_active = 1
+		ORDER BY
+			  p.display_order,
+			  p.permission_key
+";
     ";
 
     $stmt = mysqli_prepare($conn, $sql);
