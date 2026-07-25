@@ -1,0 +1,84 @@
+/******************************************************************************
+ * StudyConnect
+ * Module : User Administration
+ * File   : admin.css
+ ******************************************************************************/
+
+.sc-card-header{
+    background:#f8f9fa;
+    border-bottom:1px solid #d9d9d9;
+    color:#212529;
+}
+
+.sc-card-header h4,
+.sc-card-header h5{
+    margin:0;
+    font-weight:600;
+}
+
+.status-badge{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+    color:#fff;
+}
+
+.status-active{
+    background:#198754;     /* Bootstrap Success */
+}
+
+.status-inactive{
+    background:#6c757d;     /* Bootstrap Secondary */
+}
+
+.status-locked{
+    background:#dc3545;     /* Bootstrap Danger */
+}
+
+.status-expired{
+    background:#fd7e14;     /* Bootstrap Orange */
+}
+
+.status-pending{
+    background:#0dcaf0;     /* Bootstrap Info */
+}
+
+.status-disabled{
+    background:#212529;     /* Dark */
+}
+
+.status-default{
+    background:#6c757d;
+}
+
+.user-summary-label{
+    font-weight:600;
+    color:#555;
+}
+
+.admin-action-card{
+    border:1px solid #dee2e6;
+}
+
+.admin-page-title{
+    font-weight:600;
+}
+
+.table-sm td,
+.table-sm th{
+    padding:.45rem;
+}
+
+.table-hover tbody tr:hover{
+    background:#eef6ff;
+}
+
+.table tbody tr{
+    transition:background .15s ease;
+}
+.actions-column{
+    white-space: nowrap;
+    width:180px;
+}
