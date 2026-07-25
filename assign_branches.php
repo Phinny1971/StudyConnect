@@ -184,11 +184,8 @@ $pageSubHeading = "Manage branch-level access for this user.";
 include 'includes/admin_page_header.php';
 
 $user = $userSummary;
-echo '<pre>';
-var_dump($user);
-echo '</pre>';
-exit;
 include 'includes/user_summary_card.php';
+exit;
 
 include 'includes/admin_action_tabs.php';
 
