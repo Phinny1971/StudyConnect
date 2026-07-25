@@ -44,7 +44,6 @@ function getUserPermissions(mysqli $conn, int $userId): array
 		ORDER BY
 			  p.display_order,
 			  p.permission_key
-";
     ";
 
     $stmt = mysqli_prepare($conn, $sql);
