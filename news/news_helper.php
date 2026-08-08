@@ -1,14 +1,16 @@
 <?php
 
+if (!defined('NEWS_CACHE_SECONDS')) {
+    define('NEWS_CACHE_SECONDS', 3 * 60 * 60);
+}
 function updateEducationNews($conn){
+	
 
     /* CHECK LAST UPDATE */
 
     $check = $conn->query("
-        SELECT created_at
-        FROM education_news
-        ORDER BY created_at DESC
-        LIMIT 1
+        SELECT MAX(created_at) AS last_update
+		FROM education_news
     ");
 
     $shouldUpdate = true;
@@ -55,24 +57,20 @@ function updateEducationNews($conn){
     ];
 
     foreach($feeds as $category => $url){
+		
+		libxml_use_internal_errors(true);
 
-        $rss = @simplexml_load_file($url);
+        $rss = simplexml_load_file($url);
 
-        if(!$rss){
-            continue;
-        }
+       if (!$rss) {
+		error_log("Unable to load RSS feed: {$url}");
+		continue;
+		}
 
         foreach($rss->channel->item as $item){
 
-            $title =
-            $conn->real_escape_string(
-                (string)$item->title
-            );
-
-            $link =
-            $conn->real_escape_string(
-                (string)$item->link
-            );
+            $title = (string)$item->title;
+			$link = (string)$item->link;
 
             $pubDate = date(
                 'Y-m-d H:i:s',
@@ -153,7 +151,6 @@ $summary = html_entity_decode($summary, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 				);
 
 				$stmt->execute();
-
 				$stmt->close();
 
         }
