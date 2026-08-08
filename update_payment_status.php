@@ -1,66 +1,163 @@
 <?php
 
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+require_once 'session_check.php';
+requirePermission('student.edit');
 
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
+require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
 
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-if($conn->connect_error)
-{
-    die("Connection failed");
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    exit('Invalid request.');
 }
 
-$student_id =
-    $_POST['student_id'] ?? '';
+if (
+    !isset($_POST['csrf_token']) ||
+    !isset($_SESSION['csrf_token']) ||
+    !hash_equals(
+        $_SESSION['csrf_token'],
+        $_POST['csrf_token']
+    )
+) {
+    http_response_code(403);
+    exit('Invalid request.');
+}
 
-$university =
-    $_POST['university'] ?? '';
+try{
+		$student_id = isset($_POST['student_id'])
+			? (int) $_POST['student_id']
+			: 0;
 
-$payment_status =
-    $_POST['payment_status'] ?? 0;
+		if ($student_id <= 0) {
+			http_response_code(400);
+			exit('Invalid student.');
+		}
 
-$stmt = $conn->prepare(
+		$university = trim($_POST['university'] ?? '');
 
-    "UPDATE coursechoice
+		if ($university === '') {
+			http_response_code(400);
+			exit('University is required.');
+		}
 
-     SET Payment_Status = ?
+		$payment_status = isset($_POST['payment_status'])
+			? (int) $_POST['payment_status']
+			: 0;
+			
+		if (!in_array($payment_status, [0, 1], true)) {
+			http_response_code(400);
+			exit('Invalid payment status.');
+		}
 
-     WHERE student_id = ?
-     AND University_Name = ?"
 
-);
+			$stmt = $conn->prepare("
+				SELECT Branch_name
+				FROM studentdetails
+				WHERE student_id = ?
+			");
 
-$stmt->bind_param(
+			$stmt->bind_param("i", $student_id);
+			$stmt->execute();
 
-    "iis",
+			$result = $stmt->get_result();
 
-    $payment_status,
+			if ($result->num_rows === 0) {
+				http_response_code(404);
+				exit('Student not found.');
+			}
 
-    $student_id,
+			$student = $result->fetch_assoc();
+			$stmt->close();
 
-    $university
+			$accessibleBranches = getAccessibleBranches($conn);
 
-);
+			$allowedBranches = array_column(
+				$accessibleBranches,
+				'Branch_name'
+			);
 
-$stmt->execute();
+			if (
+				!in_array(
+					$student['Branch_name'],
+					$allowedBranches,
+					true
+				)
+			) {
+				http_response_code(403);
+				exit('Access denied.');
+			}
 
-echo "success";
+			//Verify application exists
+			$check = $conn->prepare("
+				SELECT 1
+				FROM coursechoice
+				WHERE student_id = ?
+				  AND University_Name = ?
+			");
 
-$stmt->close();
+			$check->bind_param(
+				"is",
+				$student_id,
+				$university
+			);
 
-$conn->close();
+			$check->execute();
+
+			$result = $check->get_result();
+
+			if ($result->num_rows === 0) {
+				http_response_code(404);
+				exit('Application not found.');
+			}
+
+			$check->close();
+
+		$stmt = $conn->prepare(
+
+			"UPDATE coursechoice
+
+			 SET Payment_Status = ?
+
+			 WHERE student_id = ?
+			 AND University_Name = ?"
+
+		);
+
+		$stmt->bind_param(
+
+			"iis",
+
+			$payment_status,
+
+			$student_id,
+
+			$university
+
+		);
+
+		$stmt->execute();
+
+		echo "success";
+		
+		$result->free();
+
+		$stmt->close();
+
+		$conn->close();
+
+} catch (Exception $e) {
+
+    if (isset($conn)) {
+        $conn->close();
+    }
+
+    error_log($e->getMessage());
+
+    http_response_code(500);
+    exit('Unexpected server error.');
+}
+
 
 ?>

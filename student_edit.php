@@ -2,43 +2,65 @@
 require_once 'session_check.php';
 requirePermission('student.edit');
 require_once 'includes/db_connection.php';
-
-
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
-
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
-
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+require_once 'includes/access_helper.php';
+require_once 'includes/flash_message.php';
 
 // Get student ID from query string
 $student_id = isset($_GET['student_id']) ? intval($_GET['student_id']) : 0;
 if ($student_id <= 0) {
-    die("Invalid student ID.");
+    setFlashMessage(
+        'error',
+        'Invalid Student',
+        'Invalid student selected.'
+    );
+    header("Location: student_list.php");
+    exit();
 }
 
 // Fetch student details
-$sql = "SELECT * FROM studentdetails WHERE student_id = $student_id";
-$result = $conn->query($sql);
-if (!$result || $result->num_rows === 0) {
-    die("Student not found.");
+$stmt = $conn->prepare("
+    SELECT *
+    FROM studentdetails
+    WHERE student_id = ?
+");
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($result->num_rows === 0) {
+        setFlashMessage(
+        'error',
+        'Student Not Found',
+        'The requested student does not exist.'
+    );
+
+    header("Location: student_list.php");
+    exit();
 }
 $student = $result->fetch_assoc();
+
+$accessibleBranches = getAccessibleBranches($conn);
+$allowedBranches = array_column(
+    $accessibleBranches,
+    'Branch_name'
+);
+if (
+    !in_array(
+        $student['Branch_name'],
+        $allowedBranches,
+        true
+    )
+) {
+	setFlashMessage(
+		'error',
+		'Access Denied',
+		'You are not authorized to edit students from this branch.'
+	);
+	$conn->close();
+	header("Location: student_list.php");
+	exit();
+}
+$stmt->close();
+
 
 // Fetch studentlanguagetests
 $sql = "SELECT * FROM studentlanguagetests WHERE student_id = $student_id";
@@ -76,7 +98,7 @@ while ($row = $result->fetch_assoc()) {
     $country = htmlspecialchars($row['country_name']);
     $options .= "<option value=\"$country\" $selected>$country</option>\n";
 }
-
+/*
 // Fetch branches
 $sql = "SELECT Branch_name FROM branches";
 $result = $conn->query($sql);
@@ -86,7 +108,28 @@ while ($row = $result->fetch_assoc()) {
     $Branch = htmlspecialchars($row['Branch_name']);
     $Branchoptions .= "<option value=\"$Branch\" $selected>$Branch</option>\n";
 }
+*/
 
+// Fetch only branches accessible to the logged-in user
+$branches = getAccessibleBranches($conn);
+$Branchoptions = "";
+if (count($branches) > 0) {
+    foreach ($branches as $branch) {
+    $branchName = $branch['Branch_name'];
+    $selected = ($student['Branch_name'] === $branchName)
+        ? "selected"
+        : "";
+    $Branch = htmlspecialchars(
+        $branchName,
+        ENT_QUOTES,
+        'UTF-8'
+    );
+    $Branchoptions .= "<option value=\"$Branch\" $selected>$Branch</option>\n";
+}
+} else {
+    $Branchoptions =
+        '<option value="">No Branch Assigned</option>';
+}
 
 
 // Fetch for display (if needed)
@@ -101,41 +144,6 @@ $conn->close();
 ?>
 
 <!-- HTML FORM CONTINUES BELOW - to be appended with actual tab content and JavaScript -->
-<!--
-<html>
-<head>
-  <title>Edit Student</title>
-</head>
-<body>
-  <h2>Edit Student - <?php echo htmlspecialchars($student['name']); ?></h2>
- 
-  <form action="update_student.php" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="student_id" value="<?php echo $student_id; ?>">
-
-    <label>Name:</label>
-    <input type="text" name="name" value="<?php echo htmlspecialchars($student['name']); ?>">
-
-    <label>Passport No:</label>
-    <input type="text" name="Passport_no" value="<?php echo htmlspecialchars($student['Passport_no']); ?>">
-
-	<label>Branch of Registration: </label>
-	<select name="Branch_name" id="Branch_name" class="required" >
-          <option value="">Select Branch</option>
-           <?php echo $Branchoptions; ?>
-    </select>
-	
-	<label>Preferred Country:</label>
-	<select name="preferred_country" id="preferred_country" class="required"  onchange="checkCountry(this.value)">
-          <option value="">Select Country</option>
-           <?php echo $options; ?>
-        </select>
-   
-    <button type="submit">Update</button>
-  </form>
-</body>
-</html>
--->
-
 
 <html lang="en">
 <head>
@@ -1588,27 +1596,6 @@ function renderTable() {
 
 window.onload = renderTable;		
 		
- /*       function addRow() {
-			const uni = document.getElementById("university").value.trim();
-            const course = document.getElementById("course").value.trim();
-            const url = document.getElementById("url").value.trim();
-
-            if (uni && course && url) {
-                courses.push({University_Name: uni, Course_Name: course, Course_URL: url});
-                renderTable();
-                document.getElementById("university").value="";
-                document.getElementById("course").value="";
-                document.getElementById("url").value="";
-            } else {
-                //alert("Please fill all fields.");
-				showModal({
-					title: "Warning",
-					message: "Please fill all mandatory fields.",
-					showOk: true
-				});
-            }
-        }
-*/
         function addRow() {
 			const uni = document.getElementById("university").value.trim();
             const course = document.getElementById("course").value.trim();
@@ -1617,13 +1604,6 @@ window.onload = renderTable;
 			const intakeMonth = document.getElementById("intakeMonth").value;
 			const intakeYear = document.getElementById("intakeYear").value;
 
-           /* if (uni && course && url ) {
-                courses.push({University_Name: uni, Course_Name: course, Course_URL: url});
-                renderTable();
-                document.getElementById("university").value="";
-                document.getElementById("course").value="";
-                document.getElementById("url").value="";
-            */
 			if (uni && course && url && intakeMonth && intakeYear) {
 
 				courses.push({
@@ -1661,15 +1641,7 @@ window.onload = renderTable;
             }
         }
 
- /*       function editRow(i) {
-            const c = courses[i];
-            document.getElementById("university").value = c.University_Name;
-            document.getElementById("course").value = c.Course_Name;
-            document.getElementById("url").value = c.Course_URL;
-            courses.splice(i,1); // remove and re-add on submit
-            renderTable();
-        }
-*/
+
 		function editRow(i) {
 
 			const c = courses[i];
@@ -1689,15 +1661,6 @@ window.onload = renderTable;
 		}
 		
 		
-	/*function openMessages(studentId, university, studentName, email) {
-    window.location.href =
-        "messages.php?student_id=" + studentId +
-        "&university=" + university +
-        "&student_name=" + studentName +
-        "&email=" + email;
-	}*/
-
-
 	function openMessages(studentId, university, studentName, studentEmail) {
 
 		const url =
@@ -1733,69 +1696,6 @@ window.onload = renderTable;
 /*
 ==========================================
 */
-
-/*
-function previewFile(input, previewId) {
-  const preview = document.getElementById(previewId);
-  preview.innerHTML = '';
-
-  let file;
-  let ext;
-
-  if (input instanceof HTMLInputElement) {
-    file = input.files[0];
-    if (!file) return;
-
-    ext = file.name.split('.').pop().toLowerCase();
-    const validImageTypes = ['jpg', 'jpeg', 'png'];
-
-    if (validImageTypes.includes(ext)) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'preview-img';
-        img.onclick = function() { openModalImage(e.target.result); };
-        preview.appendChild(img);
-      };
-      reader.readAsDataURL(file);
-    } else if (ext === 'pdf') {
-      const span = document.createElement('span');
-      span.textContent = "Click to Open: " + file.name;
-      span.className = 'preview-text';
-      span.onclick = function() {
-        const url = URL.createObjectURL(file);
-        openModalPDFInline(url);
-      };
-      preview.appendChild(span);
-    } else {
-      preview.textContent = "Unsupported file type: " + file.name;
-    }
-  } 
-  // Support for string filename (edit mode)
-  else if (typeof input === 'string') {
-    const fileUrl = '' + input;
-    ext = input.split('.').pop().toLowerCase();
-
-    if (['jpg', 'jpeg', 'png'].includes(ext)) {
-      const img = document.createElement('img');
-      img.src = fileUrl;
-      img.className = 'preview-img';
-      img.onclick = function() { openModalImage(fileUrl); };
-      preview.appendChild(img);
-    } else if (ext === 'pdf') {
-      const span = document.createElement('span');
-      span.textContent = "Click to Open: " + input;
-      span.className = 'preview-text';
-      span.onclick = function() { openModalPDFInline(fileUrl); };
-      preview.appendChild(span);
-    } else {
-      preview.textContent = "Unsupported file type: " + input;
-    }
-  }
-}
-*/
-
 function shortenFileName(fileName, maxLength = 30) {
 
     const dotIndex = fileName.lastIndexOf('.');
@@ -1998,14 +1898,6 @@ function previewFile(input, previewId) {
     modal.style.display = "block";
   }
 
-/*
-  function openModalPDFInline(url) {
-    const modal = document.getElementById("previewModal");
-    const container = document.getElementById("modalContentContainer");
-    container.innerHTML = `<embed src="${url}" type="application/pdf" class="modal-content" style="height:80vh;">`;
-    modal.style.display = "block";
-  }
-*/
 
 	function openModalPDFInline(url) {
 		const modal = document.getElementById("previewModal");

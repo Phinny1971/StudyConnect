@@ -1,34 +1,96 @@
 <?php
 
-session_start();
+ob_start();
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+require_once 'session_check.php';
+requirePermission('student.view');
 
+require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
+require_once 'includes/flash_message.php';
 
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
+?>
 
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+<script>
+const csrfToken = <?= json_encode($_SESSION['csrf_token']) ?>;
+</script>
 
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+<?php
+
+$student_id = isset($_GET['student_id'])
+    ? intval($_GET['student_id'])
+    : 0;
+
+if ($student_id <= 0) {
+
+    setFlashMessage(
+        'error',
+        'Invalid Student',
+        'Invalid student selected.'
+    );
+
+    header("Location: student_list.php");
+    exit();
 }
 
+$stmt = $conn->prepare("
+    SELECT *
+    FROM studentdetails
+    WHERE student_id = ?
+");
 
-$student_id   = $_GET['student_id'] ?? '';
-$student_name = urldecode($_GET['student_name'] ?? '');
-$email        = urldecode($_GET['email'] ?? '');
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+
+    setFlashMessage(
+        'error',
+        'Student Not Found',
+        'The requested student does not exist.'
+    );
+
+    header("Location: student_list.php");
+    exit();
+}
+
+$student = $result->fetch_assoc();
+
+$accessibleBranches = getAccessibleBranches($conn);
+
+$allowedBranches = array_column(
+    $accessibleBranches,
+    'Branch_name'
+);
+
+if (
+    !in_array(
+        $student['Branch_name'],
+        $allowedBranches,
+        true
+    )
+) {
+
+    setFlashMessage(
+        'error',
+        'Access Denied',
+        'You are not authorized to view this student.'
+    );
+
+    $conn->close();
+
+    header("Location: student_list.php");
+    exit();
+}
+
+$stmt->close();
+
+$student_name = $student['name'];
+$email = $student['email'];
 
 $sql = "SELECT *
         FROM coursechoice
@@ -691,6 +753,8 @@ $("#messageForm").submit(function(e){
         $('textarea[name="message"]').val();
 
     let formData = new FormData(this);
+	
+	formData.append("csrf_token", csrfToken);
 
     $.ajax({
 
@@ -704,27 +768,6 @@ $("#messageForm").submit(function(e){
 
         contentType:false,
 
-    /*    success:function(){
-
-            let newMsg =
-                '<div class="msg">' +
-                    '<div class="meta">' +
-                        'You | Just now' +
-                    '</div>' +
-                    '<div>' + messageText + '</div>' +
-                '</div>';
-
-            $("#messages").append(newMsg);
-
-            $("#messageForm")[0].reset();
-
-            $("#messages").scrollTop(
-                $("#messages")[0].scrollHeight
-            );
-
-        }
-	*/
-	
 		success:function(){
 
 			$("#messageForm")[0].reset();

@@ -1,98 +1,154 @@
 <?php
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+require_once 'session_check.php';
+requirePermission('student.view');
 
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
+require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
+require_once 'includes/student_helper.php';
 
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    exit('Invalid request.');
 }
 
-session_start();
+if (
+    !isset($_POST['csrf_token']) ||
+    !isset($_SESSION['csrf_token']) ||
+    !hash_equals(
+        $_SESSION['csrf_token'],
+        $_POST['csrf_token']
+    )
+) {
+    http_response_code(403);
+    exit('Invalid request.');
+}
 
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-{
-    $student_id = $_POST['student_id'] ?? '';
-    $university = $_POST['university'] ?? '';
-    $message = $_POST['message'] ?? '';
-    $payment_link = $_POST['payment_link'] ?? '';
 
-    //$mail_from = $_SESSION['email'];
-    $mail_from = "phinny@gmail.com";
+    //$student_id = $_POST['student_id'] ?? '';
+	
+	$student_id = isset($_POST['student_id'])
+    ? (int) $_POST['student_id']
+    : 0;
+
+	if ($student_id <= 0) {
+		http_response_code(400);
+		exit('Invalid student.');
+	}
+	
+	$university = trim($_POST['university'] ?? '');
+	if ($university === '') {
+    http_response_code(400);
+    exit('University is required.');
+	}
+
+	$message = trim($_POST['message'] ?? '');
+	if ($message === '') {
+    http_response_code(400);
+    exit('Message is required.');
+	}
+
+	$payment_link = trim($_POST['payment_link'] ?? '');
+	
+    //$mail_from = "phinny@gmail.com";
+	$mail_from = $_SESSION['email'] ?? '';
+
+	if ($mail_from === '') {
+		http_response_code(401);
+		exit('Session expired.');
+	}
+
+	// Validate student exists
+	$stmt = $conn->prepare("
+		SELECT Branch_name
+		FROM studentdetails
+		WHERE student_id = ?
+	");
+
+	$stmt->bind_param("i", $student_id);
+	$stmt->execute();
+
+	$result = $stmt->get_result();
+
+	if ($result->num_rows === 0) {
+		http_response_code(404);
+		exit('Student not found.');
+	}
+
+	$student = $result->fetch_assoc();
+	$stmt->close();
+
+	// Verify branch authorization
+	$accessibleBranches = getAccessibleBranches($conn);
+	$allowedBranches = array_column(
+		$accessibleBranches,
+		'Branch_name'
+	);
+
+	if (
+		!in_array(
+			$student['Branch_name'],
+			$allowedBranches,
+			true
+		)
+	) {
+		http_response_code(403);
+		exit('Access denied.');
+	}
+	
+	// Verify the university belongs to this student
+	$stmt = $conn->prepare("
+		SELECT 1
+		FROM coursechoice
+		WHERE student_id = ?
+		  AND University_Name = ?
+		LIMIT 1
+	");
+
+	$stmt->bind_param(
+		"is",
+		$student_id,
+		$university
+	);
+
+	$stmt->execute();
+
+	$result = $stmt->get_result();
+
+	if ($result->num_rows === 0) {
+		$stmt->close();
+		http_response_code(400);
+		exit('Invalid university selected.');
+	}
+
+	$stmt->close();
 
     $your_docs = '';
     $ho_docs = '';
 
-    /* Create folders if not exist */
 
-    if (!is_dir("uploads/sop_docs")) {
-        mkdir("uploads/sop_docs", 0777, true);
-    }
+	 $your_docs = uploadFile(
+			'your_docs',
+			'',
+			'uploads/sop_docs'
+		);
 
-    if (!is_dir("uploads/ho_docs")) {
-        mkdir("uploads/ho_docs", 0777, true);
-    }
+		$ho_docs = uploadFile(
+			'ho_docs',
+			'',
+			'uploads/ho_docs'
+		);
 
-    /* Upload SOP Document */
-
-    if (
-        isset($_FILES['your_docs']) &&
-        $_FILES['your_docs']['error'] == 0
-    )
-    {
-        $fileName =
-            time() . "_SOP_" .
-            preg_replace('/[^A-Za-z0-9._-]/', '_',
-            $_FILES['your_docs']['name']);
-
-        $target =
-            "uploads/sop_docs/" . $fileName;
-
-        if(move_uploaded_file(
-            $_FILES['your_docs']['tmp_name'],
-            $target))
-        {
-            $your_docs = $target;
-        }
-    }
-
-    /* Upload HO Document */
-
-    if (
-        isset($_FILES['ho_docs']) &&
-        $_FILES['ho_docs']['error'] == 0
-    )
-    {
-        $fileName =
-            time() . "_HO_" .
-            preg_replace('/[^A-Za-z0-9._-]/', '_',
-            $_FILES['ho_docs']['name']);
-
-        $target =
-            "uploads/ho_docs/" . $fileName;
-
-        if(move_uploaded_file(
-            $_FILES['ho_docs']['tmp_name'],
-            $target))
-        {
-            $ho_docs = $target;
-        }
-    }
-
+	if (
+		$payment_link !== '' &&
+		!filter_var($payment_link, FILTER_VALIDATE_URL)
+	) {
+		http_response_code(400);
+		exit('Invalid payment link.');
+	}
+	
     $sql = "
         INSERT INTO student_messages
         (
@@ -134,6 +190,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $stmt->execute();
 
     echo "success";
-}
+	
+	$stmt->close();
+	$conn->close();
+
 ?>
 

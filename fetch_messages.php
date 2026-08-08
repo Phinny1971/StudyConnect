@@ -1,30 +1,63 @@
 <?php
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+require_once 'session_check.php';
+requirePermission('student.view');
 
+require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
 
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
+$student_id = filter_input(
+    INPUT_GET,
+    'student_id',
+    FILTER_VALIDATE_INT
+);
 
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+$university = trim($_GET['university'] ?? '');
 
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+if (!$student_id || $university === '') {
+    http_response_code(400);
+    exit('Invalid request.');
 }
 
-$student_id = $_GET['student_id'];
-$university = $_GET['university'];
+/* Verify student exists */
+$stmt = $conn->prepare("
+    SELECT Branch_name
+    FROM studentdetails
+    WHERE student_id = ?
+");
+
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+
+$student = $stmt->get_result()->fetch_assoc();
+
+$stmt->close();
+
+if (!$student) {
+    http_response_code(404);
+    exit('Student not found.');
+}
+
+/* Branch authorization */
+$accessibleBranches = getAccessibleBranches($conn);
+
+$allowedBranches = array_column(
+    $accessibleBranches,
+    'Branch_name'
+);
+
+if (
+    !in_array(
+        $student['Branch_name'],
+        $allowedBranches,
+        true
+    )
+) {
+    http_response_code(403);
+    exit('Access denied.');
+}
 
 $stmt = mysqli_prepare($conn, 
     "SELECT * FROM student_messages 
@@ -35,19 +68,6 @@ mysqli_stmt_bind_param($stmt, "is", $student_id, $university);
 mysqli_stmt_execute($stmt);
 
 $result = mysqli_stmt_get_result($stmt);
-
-/*
-while($row = mysqli_fetch_assoc($result)) {
-
-    echo '<div class="msg">';
-    echo '<div class="meta">';
-    echo 'From: ' . htmlspecialchars($row['Mail_from']) . '<br>';
-    echo 'Date: ' . $row['Message_date'];
-    echo '</div>';
-    echo '<p>' . nl2br(htmlspecialchars($row['Mail_message'])) . '</p>';
-    echo '</div>';
-}
-*/
 
 while($row = mysqli_fetch_assoc($result))
 {
@@ -123,4 +143,7 @@ while($row = mysqli_fetch_assoc($result))
 
     echo '</div>';
 }
+
+mysqli_stmt_close($stmt);
+$conn->close();
 ?>

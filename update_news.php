@@ -1,27 +1,25 @@
 <?php
 
 require_once 'session_check.php';
-//require_once 'news_helper.php';
+require_once 'includes/db_connection.php';
 require_once 'news/news_helper.php';
 
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
+header('Content-Type: application/json');
 
-$conn = new mysqli(
-    $host,
-    $username,
-    $password,
-    $dbname
-);
+try {
 
-if (!$conn->connect_error) {
     updateEducationNews($conn);
+
+    echo json_encode([
+        'success' => true
+    ]);
+
+} catch (Throwable $e) {
+
+    http_response_code(500);
+
+    echo json_encode([
+        'success' => false
+    ]);
+
 }
-
-$conn->close();
-
-echo json_encode([
-    'success' => true
-]);

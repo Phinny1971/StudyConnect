@@ -2,6 +2,7 @@
 require_once 'session_check.php';
 requirePermission('student.delete');
 require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -18,29 +19,6 @@ if (
 ) {
     http_response_code(403);
     exit('Invalid request');
-}
-
-
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
-
-
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
-
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
 }
 
 $uploadDir = "uploads/";
@@ -60,7 +38,35 @@ if ($student_id <= 0) {
     exit;
 }
 
+/*
+|--------------------------------------------------------------------------
+| Verify branch access
+|--------------------------------------------------------------------------
+*/
 
+$stmt = $conn->prepare("
+    SELECT Branch_name
+    FROM studentdetails
+    WHERE student_id = ?
+");
+
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+
+$student = $stmt->get_result()->fetch_assoc();
+
+$stmt->close();
+
+if (!$student) {
+    echo "The requested student does not exist.";
+    exit;
+}
+
+if (!canAccessBranch($conn, $student['Branch_name'])) {
+    http_response_code(403);
+    echo "You are not authorized to delete this student.";
+    exit;
+}
 
 function deleteStudentFiles($conn, $student_id)
 {

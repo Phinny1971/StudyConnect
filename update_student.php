@@ -5,6 +5,10 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 require_once 'session_check.php';
 requirePermission('student.edit');
 require_once 'includes/db_connection.php';
+require_once 'includes/student_helper.php';
+require_once 'includes/access_helper.php';
+require_once 'includes/flash_message.php';
+
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: student_list.php");
@@ -13,15 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 if (
     !isset($_POST['csrf_token']) ||
+    !isset($_SESSION['csrf_token']) ||
     !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
 ) {
-
- /*   echo "<script>
-            alert('Invalid session. Please login again.');
-            window.location='main.php';
-          </script>";
-    exit();
-*/
 
 session_unset();
 session_destroy();
@@ -31,47 +29,6 @@ exit();
 
 }
 
-function nullIfEmpty($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : trim($value);
-}
-
-function decimalOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : floatval($value);
-}
-
-function dateOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : $value;
-}
-
-
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
-
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
-
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
-	
 ?>
 
 <link rel="stylesheet" href="css/style.css">
@@ -151,129 +108,91 @@ function closeMsgModal() {
 </script>
 
 <?php
-
-
-
-
+/*
 $uploadDir = "uploads/";
 if (!file_exists($uploadDir)) {
   mkdir($uploadDir, 0777, true);
 }
-
-// ================= FILE UPLOAD FUNCTION =================
-/*
-function uploadFile($fieldName, $existingFile = "") {
-  global $uploadDir;
-
-  if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] != 0) {
-    return $existingFile; // KEEP OLD FILE
-  }
-
-  $allowed = ['pdf', 'jpg', 'jpeg', 'png'];
-  $ext = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
-  if (!in_array($ext, $allowed)) return $existingFile;
-
-  $newFileName = uniqid() . '_' . basename($_FILES[$fieldName]["name"]);
-  $targetPath = $uploadDir . $newFileName;
-
-  if (move_uploaded_file($_FILES[$fieldName]["tmp_name"], $targetPath)) {
-    return $targetPath;
-  }
-
-  return $existingFile;
-}
 */
-
-function uploadFile($fieldName, $existingFile = "")
-{
-    global $uploadDir;
-
-    if (
-        !isset($_FILES[$fieldName]) ||
-        $_FILES[$fieldName]['error'] == UPLOAD_ERR_NO_FILE
-    ) {
-        return $existingFile;
-    }
-
-    if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
-       	throw new Exception(
-		    "Error uploading file: " .
-		    $fieldName .
-		    " (PHP Upload Error Code: " .
-		    $_FILES[$fieldName]['error'] .
-		    ")"
-		);
-    }
-
-    $allowedExtensions = [
-        'jpg',
-        'jpeg',
-        'png',
-        'pdf',
-        'doc',
-        'docx',
-        'xls',
-        'xlsx'
-    ];
-
-    $extension = strtolower(
-        pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION)
-    );
-
-    if (!in_array($extension, $allowedExtensions)) {
-        throw new Exception(
-            "Invalid file type for " .
-            $_FILES[$fieldName]['name']
-        );
-    }
-
-    $maxSize = 5 * 1024 * 1024;
-
-    if ($_FILES[$fieldName]['size'] > $maxSize) {
-        throw new Exception(
-            $_FILES[$fieldName]['name'] .
-            " exceeds the maximum upload size of 5 MB."
-        );
-    }
-
-    $newFileName =
-        uniqid() . "_" .
-        preg_replace(
-            "/[^A-Za-z0-9._-]/",
-            "_",
-            basename($_FILES[$fieldName]['name'])
-        );
-
-    $targetPath = $uploadDir . $newFileName;
-
-    if (!move_uploaded_file($_FILES[$fieldName]['tmp_name'], $targetPath)) {
-        throw new Exception(
-            "Unable to save uploaded file: " .
-            $_FILES[$fieldName]['name']
-        );
-    }
-
-    return $targetPath;
-}
-
 // ================= START =================
 $conn->begin_transaction();
 
 try {
 
-$student_id = $_POST['student_id'];
+$student_id = filter_input(INPUT_POST,'student_id',FILTER_VALIDATE_INT);
 
-// ================= BASIC =================
-$name = $_POST['name'];
-$address = $_POST['address'];
-$email = $_POST['email'];
-$phone = $_POST['phone'];
-$preferred_country = $_POST['preferred_country'];
+if (!$student_id) {
+    throw new Exception("Invalid student.");
+}
+
+/*
+|--------------------------------------------------------------------------
+| Verify the student belongs to a branch the user can access
+|--------------------------------------------------------------------------
+*/
+
+$stmt = $conn->prepare("
+    SELECT Branch_name
+    FROM studentdetails
+    WHERE student_id = ?
+");
+
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+
+$student = $stmt->get_result()->fetch_assoc();
+
+$stmt->close();
+
+if (!$student) {
+
+    setFlashMessage(
+        'error',
+        'Student Not Found',
+        'The requested student does not exist.'
+    );
+
+    header("Location: student_list.php");
+    exit();
+}
+
+if (!canAccessBranch($conn, $student['Branch_name'])) {
+
+    setFlashMessage(
+        'error',
+        'Access Denied',
+        'You are not authorized to update this student.'
+    );
+
+    header("Location: student_list.php");
+    exit();
+}
+
+
+$name = requireField($_POST['name'] ?? '','Name');
+$address = cleanString($_POST['address'] ?? '');
+$email = validateEmail($_POST['email'] ?? '');
+$phone = validatePhone($_POST['phone'] ?? '');
+$preferred_country = requireField($_POST['preferred_country'] ?? '','Preferred Country');
+
+$Branch_name = requireField($_POST['Branch_name'] ?? '','Branch');
+if (!canAccessBranch($conn, $Branch_name)) {
+
+    setFlashMessage(
+        'error',
+        'Access Denied',
+        'You are not authorized to assign students to this branch.'
+    );
+
+    header("Location: student_list.php");
+    exit();
+}
+
+
+$DateOfBirth = requireField($_POST['DateOfBirth'] ?? '','Date of Birth');
+$Passport_no = requireField($_POST['Passport_no'] ?? '','Passport Number');
 
 $other_country = nullIfEmpty($_POST['other_country'] ?? null);
-$Branch_name = nullIfEmpty($_POST['Branch_name'] ?? null);
-$DateOfBirth = dateOrNull($_POST['DateOfBirth'] ?? null);
-$Passport_no = nullIfEmpty($_POST['Passport_no'] ?? null);
 $Passport_issue = dateOrNull($_POST['Passport_issue'] ?? null);
 $Passport_Expiry = dateOrNull($_POST['Passport_Expiry'] ?? null);
 	
@@ -284,8 +203,15 @@ $Passport_Upload = uploadFile('Passport_Upload', $_POST['existing_Passport_Uploa
 $stmt = $conn->prepare("SELECT country_code FROM countries WHERE country_name = ?");
 $stmt->bind_param("s", $preferred_country);
 $stmt->execute();
+
 $row = $stmt->get_result()->fetch_assoc();
+if (!$row) {
+    throw new Exception(
+        "Invalid preferred country selected."
+    );
+}
 $Country_code = trim($row['country_code']);
+
 $stmt->close();
 
 // ================= MARKS =================
@@ -367,7 +293,12 @@ updateLangApt($conn, $student_id, $Country_code);
 saveOtherDetails($conn, $student_id, $Country_code);
 
 // ================= COURSE CHOICE =================
-$courses = json_decode($_POST['courses'], true);
+$courses = json_decode($_POST['courses'] ?? '[]', true);
+
+if (!is_array($courses)) {
+    throw new Exception("Invalid course selection.");
+}
+
 saveCourseChoices($conn, $student_id, $Country_code, $courses);
 
 // ================= COMMIT =================
@@ -388,18 +319,32 @@ showModal({
 
 } catch (Exception $e) {
   $conn->rollback();
-  echo "Error: " . $e->getMessage();
+  
+	 $message = htmlspecialchars(
+		$e->getMessage(),
+		ENT_QUOTES,
+		'UTF-8'
+	);
+
+	echo "
+	<script>
+	showModal({
+		title:'Error',
+		message:'{$message}',
+		showOk:true
+	});
+	</script>";
 }
 
 $conn->close();
 
 
 // ================= FUNCTION =================
-function updateLangApt($conn, $student_id, $Country_code) {
-
 function getFile($name) {
     return uploadFile($name, $_POST["existing_" . $name] ?? "");
 }
+
+function updateLangApt($conn, $student_id, $Country_code) {
 
 $sql = "UPDATE studentlanguagetests SET
 Country_code=?,
@@ -415,23 +360,6 @@ DULINGO_UPLOAD=?,LANGCERT_UPLOAD=?,IELTS_UPLOAD=?,PTE_UPLOAD=?,TOEFL_UPLOAD=?
 WHERE student_id=?";
 
 $stmt = $conn->prepare($sql);
-/*
-$stmt->bind_param("ssssssssssssssssssssssssssssssssssssssssssssssss",
-$Country_code,
-$_POST['IELTS_OA'],$_POST['IELTS_READ'],$_POST['IELTS_WRITE'],$_POST['IELTS_SPEAK'],$_POST['IELTS_LISTEN'],
-$_POST['PTE_OA'],$_POST['PTE_READ'],$_POST['PTE_WRITE'],$_POST['PTE_SPEAK'],$_POST['PTE_LISTEN'],
-$_POST['TOEFL_OA'],$_POST['TOEFL_READ'],$_POST['TOEFL_WRITE'],$_POST['TOEFL_SPEAK'],$_POST['TOEFL_LISTEN'],
-$_POST['LANGCERT_OA'],$_POST['LANGCERT_READ'],$_POST['LANGCERT_WRITE'],$_POST['LANGCERT_SPEAK'],$_POST['LANGCERT_LISTEN'],
-$_POST['DULINGO_OA'],$_POST['DULINGO_READ'],$_POST['DULINGO_WRITE'],$_POST['DULINGO_SPEAK'],$_POST['DULINGO_LISTEN'],
-$_POST['ENGOTHER_OA'],$_POST['ENGOTHER_READ'],$_POST['ENGOTHER_WRITE'],$_POST['ENGOTHER_SPEAK'],$_POST['ENGOTHER_LISTEN'],$_POST['ENGOTHER_NAME'],
-$_POST['GRE_OA'],$_POST['SAT_OA'],$_POST['GMAT_OA'],$_POST['APTOTHER_NAME'],$_POST['APTOTHER_OA'],
-getFile('ENGOTHER_UPLOAD'),getFile('APTOTHER_UPLOAD'),getFile('GMAT_UPLOAD'),
-getFile('SAT_UPLOAD'),getFile('GRE_UPLOAD'),
-getFile('DULINGO_UPLOAD'),getFile('LANGCERT_UPLOAD'),
-getFile('IELTS_UPLOAD'),getFile('PTE_UPLOAD'),getFile('TOEFL_UPLOAD'),
-$student_id
-);
-*/
 
 $ENGOTHER_UPLOAD  = getFile('ENGOTHER_UPLOAD');
 $APTOTHER_UPLOAD  = getFile('APTOTHER_UPLOAD');
@@ -518,31 +446,6 @@ $stmt->close();
 
 
 // ================= COURSE =================
-/*
-function saveCourseChoices($conn, $student_id, $Country_code, $courses) {
-
-$stmt = $conn->prepare("DELETE FROM coursechoice WHERE student_id = ?");
-$stmt->bind_param("i", $student_id);
-$stmt->execute();
-
-$stmt = $conn->prepare("INSERT INTO coursechoice 
-(student_id, COUNTRY_CODE, University_Name, Course_Name, Course_URL)
-VALUES (?, ?, ?, ?, ?)");
-
-foreach ($courses as $c) {
-    $stmt->bind_param("issss",
-        $student_id,
-        $Country_code,
-        $c['University_Name'],
-        $c['Course_Name'],
-        $c['Course_URL']
-    );
-    $stmt->execute();
-}
-
-}
-*/
-
 function saveCourseChoices($conn, $student_id, $Country_code, $courses) {
 
     // Delete existing records in coursechoice
@@ -597,13 +500,10 @@ function saveCourseChoices($conn, $student_id, $Country_code, $courses) {
 
 function getUploadedFileOrExisting($fieldName)
 {
-    $file = uploadFile($fieldName);
-
-    if (!empty($file)) {
-        return $file;
-    }
-
-    return $_POST['existing_' . $fieldName] ?? null;
+    return uploadFile(
+        $fieldName,
+        $_POST['existing_' . $fieldName] ?? ""
+    );
 }
 
 
@@ -772,10 +672,78 @@ function saveOtherDetails($conn, $student_id, $Country_code)
 		$explor3
     );
 
-    if (!$stmt->execute()) {
-        echo "Error saving studentotherdetails: " . $stmt->error;
+	$stmt->execute();
+	$stmt->close();
+}
+
+?>
+<!--
+// ================= FILE UPLOAD FUNCTION =================
+/*
+function uploadFile($fieldName, $existingFile = "")
+{
+    global $uploadDir;
+
+    if (
+        !isset($_FILES[$fieldName]) ||
+        $_FILES[$fieldName]['error'] == UPLOAD_ERR_NO_FILE
+    ) {
+        return $existingFile;
     }
 
-    $stmt->close();
+    if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception("Error uploading file: " . $fieldName);
+    }
+
+    $allowedExtensions = [
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx'
+    ];
+
+    $extension = strtolower(
+        pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION)
+    );
+
+    if (!in_array($extension, $allowedExtensions)) {
+        throw new Exception(
+            "Invalid file type for " .
+            $_FILES[$fieldName]['name']
+        );
+    }
+
+    $maxSize = 5 * 1024 * 1024;
+
+    if ($_FILES[$fieldName]['size'] > $maxSize) {
+        throw new Exception(
+            $_FILES[$fieldName]['name'] .
+            " exceeds the maximum upload size of 5 MB."
+        );
+    }
+
+    $newFileName =
+        uniqid() . "_" .
+        preg_replace(
+            "/[^A-Za-z0-9._-]/",
+            "_",
+            basename($_FILES[$fieldName]['name'])
+        );
+
+    $targetPath = $uploadDir . $newFileName;
+
+    if (!move_uploaded_file($_FILES[$fieldName]['tmp_name'], $targetPath)) {
+        throw new Exception(
+            "Unable to save uploaded file: " .
+            $_FILES[$fieldName]['name']
+        );
+    }
+
+    return $targetPath;
 }
-?>
+*/
+-->

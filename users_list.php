@@ -15,6 +15,7 @@
  ******************************************************************************/
 
 require_once 'session_check.php';
+
 require_once 'includes/db_connection.php';
 
 $pageTitle = "User Management";
@@ -67,11 +68,20 @@ u.last_login_at
 ORDER BY
 u.display_name";
 
-$userResult = $conn->query($sql);
-
-if (!$userResult) {
-    die($conn->error);
+try
+{
+    $userResult = $conn->query($sql);
 }
+catch (mysqli_sql_exception $e)
+{
+    error_log($e->getMessage());
+
+    $_SESSION['error_message'] = "Unable to load the user list.";
+
+    header("Location: dashboard.php");
+    exit();
+}
+
 ?>
 
 <?php

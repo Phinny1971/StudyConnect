@@ -1,58 +1,77 @@
 <?php
 require_once 'session_check.php';
+require_once 'includes/flash_message.php';
 requirePermission('student.view');
+require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
 
+//$sql = "SELECT student_id, name, email, branch_name, preferred_country,  DATE_FORMAT(DateOfBirth,'%d-%m-%Y') AS DateOfBirth, Passport_no, Passport_issue, country_code, DATE_FORMAT(created_at,'%d-%m-%Y %H:%i') AS created_at FROM studentdetails ORDER BY student_id DESC";
 
+if (canAccessAllBranches($conn)) {
 
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+    $sql = "
+        SELECT
+            student_id,
+            name,
+            email,
+            branch_name,
+            preferred_country,
+            DATE_FORMAT(DateOfBirth,'%d-%m-%Y') AS DateOfBirth,
+            Passport_no,
+            Passport_issue,
+            country_code,
+            DATE_FORMAT(created_at,'%d-%m-%Y %H:%i') AS created_at
+        FROM studentdetails
+        ORDER BY student_id DESC
+    ";
 
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
+    $result = $conn->query($sql);
 
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
+} else {
 
-if ($conn->connect_error) {
-  http_response_code(500);
-  die("Connection failed: " . $conn->connect_error);
+    $accessibleBranches = getAccessibleBranches($conn);
+
+    if (empty($accessibleBranches)) {
+
+        $result = false;
+
+    } else {
+
+        $branchNames = array_column($accessibleBranches, 'Branch_name');
+
+        $placeholders = implode(',', array_fill(0, count($branchNames), '?'));
+
+        $sql = "
+            SELECT
+                student_id,
+                name,
+                email,
+                branch_name,
+                preferred_country,
+                DATE_FORMAT(DateOfBirth,'%d-%m-%Y') AS DateOfBirth,
+                Passport_no,
+                Passport_issue,
+                country_code,
+                DATE_FORMAT(created_at,'%d-%m-%Y %H:%i') AS created_at
+            FROM studentdetails
+            WHERE branch_name IN ($placeholders)
+            ORDER BY student_id DESC
+        ";
+
+        $stmt = $conn->prepare($sql);
+
+        $types = str_repeat('s', count($branchNames));
+
+        $stmt->bind_param($types, ...$branchNames);
+
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+    }
 }
 
-/*
-// Handle delete request
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
-  $student_id = intval($_POST['delete_id']);
-  $conn->begin_transaction();
-  try {
-    $delLang = $conn->prepare("DELETE FROM studentlanguagetests WHERE student_id = ?");
-    $delLang->bind_param("i", $student_id);
-    $delLang->execute();
 
-    $delStudent = $conn->prepare("DELETE FROM studentdetails WHERE student_id = ?");
-    $delStudent->bind_param("i", $student_id);
-    $delStudent->execute();
-
-    $conn->commit();
-    echo "success";
-  } catch (Exception $e) {
-    $conn->rollback();
-    http_response_code(500);
-    echo "DB Error: " . $e->getMessage();
-  }
-  exit;
-}
-*/
-
-$sql = "SELECT student_id, name, email, branch_name, preferred_country,  DATE_FORMAT(DateOfBirth,'%d-%m-%Y') AS DateOfBirth, Passport_no, Passport_issue, country_code, DATE_FORMAT(created_at,'%d-%m-%Y %H:%i') AS created_at FROM studentdetails ORDER BY student_id DESC";
-$result = $conn->query($sql);
+//$result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -160,7 +179,8 @@ $result = $conn->query($sql);
     </tr>
   </thead>
   <tbody>
-    <?php if ($result->num_rows > 0): ?>
+	<?php if ($result && $result->num_rows > 0): ?>
+	
       <?php while($row = $result->fetch_assoc()): ?>
         <tr>
           <td><?= htmlspecialchars($row['country_code'] . $row['student_id']) ?></td>
@@ -233,15 +253,6 @@ $result = $conn->query($sql);
 const csrfToken = <?= json_encode($_SESSION['csrf_token']) ?>;
 
 console.log("CSRF Token:", csrfToken);
-/*
-  $(document).ready(function() {
-    $('#studentTable').DataTable({
-      dom: 'Bfrtip',
-      buttons: ['excelHtml5', 'pdfHtml5', 'print'],
-      responsive: true
-    });
-  });
-*/
  
   $(document).ready(function() {
 	  $('#studentTable').DataTable({
@@ -425,5 +436,25 @@ function openApplications(studentId, studentName, email) {
 
 <!-- Custom Modal -->
 <?php include 'modal.php'; ?>
+
+<?php
+$flash = getFlashMessage();
+
+if ($flash):
+?>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    showModal({
+        title: <?= json_encode($flash['title']) ?>,
+        message: <?= json_encode($flash['message']) ?>,
+        showOk: true,
+        showYesNo: false
+    });
+
+});
+</script>
+<?php endif; ?>
+
 </body>
 </html>

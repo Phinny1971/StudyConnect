@@ -2,6 +2,8 @@
 require_once 'session_check.php';
 requirePermission('student.create');
 require_once 'includes/db_connection.php';
+require_once 'includes/student_helper.php';
+
 
 if (
     !isset($_POST['csrf_token']) ||
@@ -13,6 +15,7 @@ if (
 ) {
     die("Invalid request");
 }
+
 
 ?>
 
@@ -95,359 +98,274 @@ function closeMsgModal() {
 
 <?php
 
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
-
-
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
-
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-
-
-// Check connection
-/*if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
-*/
-if (!$conn) {
-
-   error_log(
-      mysqli_connect_error()
-   );
-
-   die(
-      "Database unavailable"
-   );
-}
-
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-
-function nullIfEmpty($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : trim($value);
-}
-
-function decimalOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : floatval($value);
-}
-
-function intOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : intval($value);
-}
-
-function dateOrNull($value) {
-    return ($value === '' || $value === null)
-        ? null
-        : $value;
-}
-
-
-// Create uploads directory if not exists
-$uploadDir = "uploads/";
-if (!file_exists($uploadDir)) {
-  //mkdir($uploadDir, 0777, true);
-  mkdir($uploadDir, 0750, true);
-}
-
-//Check for Record already exists in combo DOB and PassportNo
-//-------------------------------
-$date = DateTime::createFromFormat('Y-m-d', $_POST['DateOfBirth']);
-$dob = $date->format('Y-m-d'); // convert to correct DB format
-$pport= $_POST['Passport_no'];
-$checkSql = "SELECT * FROM studentdetails WHERE Passport_no = ? AND DateOfBirth = ?";
-$stmt = $conn->prepare($checkSql);
-$stmt->bind_param("ss", $pport, $dob);
-$stmt->execute();
-$result = $stmt->get_result();
-//-------------------------------
-
-if ($result->num_rows === 0) {
-
-function uploadFile($fieldName)
-{
-	
-    global $uploadDir;
-	
-    if (
-        !isset($_FILES[$fieldName]) ||
-        $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK ||
-        empty($_FILES[$fieldName]['tmp_name'])
-    ) {
-        return null;
-    }
-
-    if (!is_uploaded_file($_FILES[$fieldName]['tmp_name'])) {
-        throw new Exception(
-            "Uploaded file is missing or invalid for field: " . $fieldName
-        );
-    }
-
-    if (!file_exists($_FILES[$fieldName]['tmp_name'])) {
-        throw new Exception(
-            "Temporary upload file not found for field: " . $fieldName
-        );
-    }
-
-    if (
-        !isset($_FILES[$fieldName]) ||
-        $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK
-    ) {
-        return null;
-    }
-
-    $maxSize = 5 * 1024 * 1024;
-
-    if ($_FILES[$fieldName]['size'] > $maxSize) {
-        throw new Exception(
-            "File too large: " . $fieldName
-        );
-    }
-
-    $allowedMimeTypes = [
-        'application/pdf' => 'pdf',
-        'image/jpeg'      => 'jpg',
-        'image/png'       => 'png'
-    ];
-
-    $finfo = finfo_open(
-        FILEINFO_MIME_TYPE
-    );
-
-    $mime = finfo_file(
-        $finfo,
-        $_FILES[$fieldName]['tmp_name']
-    );
-
-    finfo_close($finfo);
-
-    if (!isset($allowedMimeTypes[$mime])) {
-        throw new Exception(
-            "Invalid file type"
-        );
-    }
-
-    $extension =
-        $allowedMimeTypes[$mime];
-
-    $newFileName =
-        bin2hex(random_bytes(16))
-        . "."
-        . $extension;
-
-    $target =
-        $uploadDir
-        . DIRECTORY_SEPARATOR
-        . $newFileName;
-
-    if (
-        !move_uploaded_file(
-            $_FILES[$fieldName]['tmp_name'],
-            $target
-        )
-    ) {
-        throw new Exception(
-            "Upload failed"
-        );
-    }
-
-    return $target;
-}
-
-
-$name = $_POST['name'];
-$address = $_POST['address'];
-$email = $_POST['email'];
-$phone = $_POST['phone'];
-$preferred_country = $_POST['preferred_country'];
-
-$courses = json_decode($_POST['courses'], true);
-//echo "<pre>";
-//print_r($courses);
-//if (isset($_POST['coursesInput'])) {
-    
-//}
-
-//GET COUNTRY CODE 
-//----------------
-$sql = "SELECT country_code FROM countries WHERE country_name = ?";
-$stmt = $conn->prepare($sql);
-// Bind parameter and execute
-$stmt->bind_param("s", $preferred_country);
-$stmt->execute();
-// Get the result
-$result = $stmt->get_result();
-// Fetch and display result
-$row = $result->fetch_assoc();
-$Country_code = trim(htmlspecialchars($row['country_code']));
-// Close sql Statement
-$stmt->close();
-//----------------
-
-//$other_country= $_POST['other_country'];
-$other_country = nullIfEmpty($_POST['other_country'] ?? null);
-$Branch_name= $_POST['Branch_name'];
-$DateOfBirth= $_POST['DateOfBirth'];
-
-$Passport_no=$_POST['Passport_no'];
-$Passport_issue = dateOrNull($_POST['Passport_issue'] ?? null);
-$Passport_Expiry = dateOrNull($_POST['Passport_Expiry'] ?? null);
-$Passport_Upload=uploadFile('Passport_Upload');
-
-// Marks
-$marks = [
-  '10th' => decimalOrNull($_POST['marks_10th'] ?? null),
-  'intermediate' => decimalOrNull($_POST['marks_intermediate'] ?? null),
-  'degree' => decimalOrNull($_POST['marks_degree'] ?? null),
-  'pg' => decimalOrNull($_POST['marks_pg'] ?? null),
-  'diploma' => decimalOrNull($_POST['marks_diploma'] ?? null),
-  'other' => decimalOrNull($_POST['marks_other'] ?? null)
-];
-
-// Uploads Marks
-$certs = [
-  '10th' => uploadFile('cert_10th'),
-  'intermediate' => uploadFile('cert_intermediate'),
-  'degree' => uploadFile('cert_degree'),
-  'pg' => uploadFile('cert_pg'),
-  'diploma' => uploadFile('cert_diploma'),
-  'other' => uploadFile('cert_other')
-];
-
-// Experience
-$experience = [
-  'Exp1From_date' => dateOrNull($_POST['Exp1From_date'] ?? null),
-  'Exp1To_date' => dateOrNull($_POST['Exp1To_date'] ?? null),
-  'Exp2From_date' => dateOrNull($_POST['Exp2From_date'] ?? null),
-  'Exp2To_date' => dateOrNull($_POST['Exp2To_date'] ?? null),
-  'Exp3From_date' => dateOrNull($_POST['Exp3From_date'] ?? null),
-  'Exp3To_date' => dateOrNull($_POST['Exp3To_date'] ?? null)
-];
-
-// Uploads Experience
-$certsExp = [
-  'Exp1_Cert' => uploadFile('Exp1_Cert'),
-  'Exp2_Cert' => uploadFile('Exp2_Cert'),
-  'Exp3_Cert' => uploadFile('Exp3_Cert')
-];
-
-
-
-// Prepare SQL
-$sql = "INSERT INTO studentdetails 
-(name, address, email, phone, preferred_country, 
- marks_10th, cert_10th,
- marks_intermediate, cert_intermediate,
- marks_degree, cert_degree,
- marks_pg, cert_pg,
- marks_diploma, cert_diploma,
- marks_other, cert_other,
- Exp1From_date, Exp1To_date, Exp1_Cert,
- Exp2From_date, Exp2To_date, Exp2_Cert, 
- Exp3From_date, Exp3To_date, Exp3_Cert,
- Country_code, other_country, Branch_name, 
- DateOfBirth, Passport_no, Passport_issue, Passport_Expiry, Passport_Upload
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-$stmt = $conn->prepare($sql);
-	
-$stmt->bind_param("ssssssssssssssssssssssssssssssssss",
-  $name, $address, $email, $phone, $preferred_country,
-  $marks['10th'], $certs['10th'],
-  $marks['intermediate'], $certs['intermediate'],
-  $marks['degree'], $certs['degree'],
-  $marks['pg'], $certs['pg'],
-  $marks['diploma'], $certs['diploma'],
-  $marks['other'], $certs['other'],
-  $experience['Exp1From_date'], $experience['Exp1To_date'], $certsExp['Exp1_Cert'],
-  $experience['Exp2From_date'], $experience['Exp2To_date'], $certsExp['Exp2_Cert'],
-  $experience['Exp3From_date'], $experience['Exp3To_date'], $certsExp['Exp3_Cert'],
-  $Country_code, $other_country, $Branch_name,
-  $DateOfBirth, $Passport_no, $Passport_issue, $Passport_Expiry, $Passport_Upload
-);
-
-$conn->begin_transaction();
-
 try {
+	
 
-   // all inserts 
-	if ($stmt->execute()) {
-		$last_id = mysqli_insert_id($conn);
-	  //echo "Student details saved successfully!";
-	  saveLangAptTest($conn, $last_id, $Country_code);
-	  saveOtherDetails($conn, $last_id, $Country_code);
-	  saveCourseChoices($conn, $last_id, $Country_code, $courses);
-	 //echo "<script type='text/javascript'>alert('Student details saved successfully!. Student Id : " . $Country_code . $last_id . "');  </script>";
-	 
-
-	echo "<script type='text/javascript'>
-	showModal({
-		title: 'Success',
-		message: 'Student details saved successfully. Student Id: " . $Country_code . $last_id . "',
-		showOk: true, onOk: function () {
-			window.location.href = 'student_list.php';
+		// Create uploads directory if not exists
+		$uploadDir = "uploads/";
+		if (!file_exists($uploadDir)) {
+		  //mkdir($uploadDir, 0777, true);
+		  mkdir($uploadDir, 0750, true);
 		}
-	}); 
-	</script>";
 
-
-
-	} else {
-	  //echo "Error: " . $stmt->error;
-		error_log($stmt->error);
-
-		throw new Exception(
-			"Database operation failed"
+		$DateOfBirth = requireField(
+			$_POST['DateOfBirth'] ?? '',
+			'Date of Birth'
 		);
+
+		//Check for Record already exists in combo DOB and PassportNo
+		//-------------------------------
+		$date = DateTime::createFromFormat('Y-m-d', $DateOfBirth);
+
+		if (!$date) {
+			throw new Exception("Invalid Date of Birth.");
+		}
+
+		$dob = $date->format('Y-m-d');
+
+
+		$pport= $_POST['Passport_no'];
+		$checkSql = "SELECT * FROM studentdetails WHERE Passport_no = ? AND DateOfBirth = ?";
+		$stmt = $conn->prepare($checkSql);
+		$stmt->bind_param("ss", $pport, $dob);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		//-------------------------------
+
+		if ($result->num_rows === 0) {
+
+		$name = requireField($_POST['name'] ?? '', 'Name');
+		$address = cleanString($_POST['address'] ?? '');
+		$email = validateEmail($_POST['email'] ?? '');
+		$phone = validatePhone($_POST['phone'] ?? '');
+		$preferred_country = requireField(
+			$_POST['preferred_country'] ?? '',
+			'Preferred Country'
+		);
+
+
+		//$courses = json_decode($_POST['courses'], true);
+		$courses = json_decode($_POST['courses'] ?? '[]', true);
+		
+		//echo "<pre>";
+		//print_r($courses);
+		//if (isset($_POST['coursesInput'])) {
+			
+		//}
+
+		//GET COUNTRY CODE 
+		//----------------
+		$sql = "SELECT country_code FROM countries WHERE country_name = ?";
+		$stmt = $conn->prepare($sql);
+		// Bind parameter and execute
+		$stmt->bind_param("s", $preferred_country);
+		$stmt->execute();
+		// Get the result
+		$result = $stmt->get_result();
+
+		// Fetch and display result
+		$row = $result->fetch_assoc();
+		if (!$row) {
+			throw new Exception("Invalid preferred country selected.");
+		}
+
+		$Country_code = trim($row['country_code']);
+
+
+		// Close sql Statement
+		$stmt->close();
+		//----------------
+
+		//$other_country= $_POST['other_country'];
+		$other_country = nullIfEmpty($_POST['other_country'] ?? null);
+		$Branch_name = requireField(
+			$_POST['Branch_name'] ?? '',
+			'Branch'
+		);
+
+	/*	$DateOfBirth = requireField(
+			$_POST['DateOfBirth'] ?? '',
+			'Date of Birth'
+		);
+	*/
+		$Passport_no = requireField(
+			$_POST['Passport_no'] ?? '',
+			'Passport Number'
+		);
+
+
+		$Passport_issue = dateOrNull($_POST['Passport_issue'] ?? null);
+		$Passport_Expiry = dateOrNull($_POST['Passport_Expiry'] ?? null);
+		$Passport_Upload=uploadFile('Passport_Upload');
+
+		// Marks
+		$marks = [
+		  '10th' => decimalOrNull($_POST['marks_10th'] ?? null),
+		  'intermediate' => decimalOrNull($_POST['marks_intermediate'] ?? null),
+		  'degree' => decimalOrNull($_POST['marks_degree'] ?? null),
+		  'pg' => decimalOrNull($_POST['marks_pg'] ?? null),
+		  'diploma' => decimalOrNull($_POST['marks_diploma'] ?? null),
+		  'other' => decimalOrNull($_POST['marks_other'] ?? null)
+		];
+
+		// Uploads Marks
+		$certs = [
+		  '10th' => uploadFile('cert_10th'),
+		  'intermediate' => uploadFile('cert_intermediate'),
+		  'degree' => uploadFile('cert_degree'),
+		  'pg' => uploadFile('cert_pg'),
+		  'diploma' => uploadFile('cert_diploma'),
+		  'other' => uploadFile('cert_other')
+		];
+
+		// Experience
+		$experience = [
+		  'Exp1From_date' => dateOrNull($_POST['Exp1From_date'] ?? null),
+		  'Exp1To_date' => dateOrNull($_POST['Exp1To_date'] ?? null),
+		  'Exp2From_date' => dateOrNull($_POST['Exp2From_date'] ?? null),
+		  'Exp2To_date' => dateOrNull($_POST['Exp2To_date'] ?? null),
+		  'Exp3From_date' => dateOrNull($_POST['Exp3From_date'] ?? null),
+		  'Exp3To_date' => dateOrNull($_POST['Exp3To_date'] ?? null)
+		];
+
+		// Uploads Experience
+		$certsExp = [
+		  'Exp1_Cert' => uploadFile('Exp1_Cert'),
+		  'Exp2_Cert' => uploadFile('Exp2_Cert'),
+		  'Exp3_Cert' => uploadFile('Exp3_Cert')
+		];
+
+
+
+		// Prepare SQL
+		$sql = "INSERT INTO studentdetails 
+		(name, address, email, phone, preferred_country, 
+		 marks_10th, cert_10th,
+		 marks_intermediate, cert_intermediate,
+		 marks_degree, cert_degree,
+		 marks_pg, cert_pg,
+		 marks_diploma, cert_diploma,
+		 marks_other, cert_other,
+		 Exp1From_date, Exp1To_date, Exp1_Cert,
+		 Exp2From_date, Exp2To_date, Exp2_Cert, 
+		 Exp3From_date, Exp3To_date, Exp3_Cert,
+		 Country_code, other_country, Branch_name, 
+		 DateOfBirth, Passport_no, Passport_issue, Passport_Expiry, Passport_Upload
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+		$stmt = $conn->prepare($sql);
+			
+		$stmt->bind_param("ssssssssssssssssssssssssssssssssss",
+		  $name, $address, $email, $phone, $preferred_country,
+		  $marks['10th'], $certs['10th'],
+		  $marks['intermediate'], $certs['intermediate'],
+		  $marks['degree'], $certs['degree'],
+		  $marks['pg'], $certs['pg'],
+		  $marks['diploma'], $certs['diploma'],
+		  $marks['other'], $certs['other'],
+		  $experience['Exp1From_date'], $experience['Exp1To_date'], $certsExp['Exp1_Cert'],
+		  $experience['Exp2From_date'], $experience['Exp2To_date'], $certsExp['Exp2_Cert'],
+		  $experience['Exp3From_date'], $experience['Exp3To_date'], $certsExp['Exp3_Cert'],
+		  $Country_code, $other_country, $Branch_name,
+		  $DateOfBirth, $Passport_no, $Passport_issue, $Passport_Expiry, $Passport_Upload
+		);
+
+		$conn->begin_transaction();
+
+		try {
+
+		   // all inserts 
+			if ($stmt->execute()) {
+				$last_id = mysqli_insert_id($conn);
+			  //echo "Student details saved successfully!";
+			  saveLangAptTest($conn, $last_id, $Country_code);
+			  saveOtherDetails($conn, $last_id, $Country_code);
+			  saveCourseChoices($conn, $last_id, $Country_code, $courses);
+			 //echo "<script type='text/javascript'>alert('Student details saved successfully!. Student Id : " . $Country_code . $last_id . "');  </script>";
+			 
+
+			echo "<script type='text/javascript'>
+			showModal({
+				title: 'Success',
+				message: 'Student details saved successfully. Student Id: " . $Country_code . $last_id . "',
+				showOk: true, onOk: function () {
+					window.location.href = 'student_list.php';
+				}
+			}); 
+			</script>";
+
+
+
+			} else {
+			  //echo "Error: " . $stmt->error;
+				error_log($stmt->error);
+
+				throw new Exception(
+					"Database operation failed"
+				);
+			}
+		 $conn->commit();
+
+		} catch(Exception $e){
+
+		   $conn->rollback();
+
+		   throw $e;
+		}
+
+		}
+		else{      //else for record already exists if condition at tht top
+
+		 //echo "<script type='text/javascript'>alert('Student details Already exists for the Passport Number & Date of Birth..!! RECORD NOT SAVED.'); history.back(); </script>";
+			//echo "Student details Already exists for the Passport Number & Date of Birth..!!";
+
+		echo "<script>
+
+		showModal({
+			title: 'Attention..!!',
+			message: 'Student details Already exists for the Passport Number & Date of Birth..!! RECORD NOT SAVED.',
+			showOk: true,
+			onOk: function () {
+				history.back();
+			}
+		});
+
+		</script>";
+
+		}
+		
+		$conn->close();
+
+}
+catch (Exception $e) {
+
+	if (isset($conn) && $conn->ping()) {
+		try {
+			$conn->rollback();
+		} catch (Exception $ignored) {
+		}
 	}
- $conn->commit();
 
-} catch(Exception $e){
+    $message = htmlspecialchars(
+        $e->getMessage(),
+        ENT_QUOTES,
+        'UTF-8'
+    );
 
-   $conn->rollback();
-
-   throw $e;
+    echo "
+    <script>
+    showModal({
+        title: 'Error',
+        message: '{$message}',
+        showOk: true
+    });
+    </script>";
 }
 
-}
-else{      //else for record already exists if condition at tht top
-
- //echo "<script type='text/javascript'>alert('Student details Already exists for the Passport Number & Date of Birth..!! RECORD NOT SAVED.'); history.back(); </script>";
-	//echo "Student details Already exists for the Passport Number & Date of Birth..!!";
-
-echo "<script>
-
-showModal({
-    title: 'Attention..!!',
-    message: 'Student details Already exists for the Passport Number & Date of Birth..!! RECORD NOT SAVED.',
-    showOk: true,
-    onOk: function () {
-        history.back();
-    }
-});
-
-</script>";
-
-}
-
-$conn->close();
 
 function saveLangAptTest($conn, $last_id, $Country_code)
 {
@@ -625,7 +543,7 @@ function saveCourseChoices($conn, $student_id, $Country_code, $coursesJson) {
     } catch (Exception $e) {
 
         // Rollback on error
-        $conn->rollback();
+        //$conn->rollback();
 
         // Optional: log error
         // error_log($e->getMessage());
@@ -787,10 +705,12 @@ function saveOtherDetails($conn, $student_id, $Country_code)
 		$explor3
     );
 
-    if (!$stmt->execute()) {
-        echo "Error saving studentotherdetails: " . $stmt->error;
-    }
-
+	if (!$stmt->execute()) {
+		throw new Exception(
+			"Unable to save student other details."
+		);
+	}
+	
     $stmt->close();
 }
 

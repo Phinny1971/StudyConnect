@@ -1,10 +1,14 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'session_check.php';
 requirePermission('student.create');
 require_once 'includes/db_connection.php';
+require_once 'includes/access_helper.php';
 
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
+//error_reporting(E_ALL);
+//ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 // Prevent browser cache
@@ -18,40 +22,13 @@ header("Referrer-Policy: strict-origin-when-cross-origin");
 header("X-XSS-Protection: 1; mode=block");
 
 
-
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
-
-
-/*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
-*/
-
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $database, $port);
-//$conn = new mysqli($host, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-  //die("Connection failed: " . $conn->connect_error);
-	error_log(
-    "Database Connection Failed : "
-    . mysqli_connect_error()
-	);
-
-	die(
-		"System temporarily unavailable."
-	);
-}
-
 // Fetch countries
-$sql = "SELECT country_name FROM countries";
+//$sql = "SELECT country_name FROM countries";
+$sql = "
+    SELECT country_name
+    FROM countries
+    ORDER BY country_name ASC
+";
 $result = $conn->query($sql);
 
 // Create options HTML
@@ -64,7 +41,7 @@ if ($result->num_rows > 0) {
 } else {
     $options .= "<option disabled>No countries found</option>";
 }
-
+/*
 // Fetch Branches
 $sql = "SELECT Branch_name FROM branches";
 $result = $conn->query($sql);
@@ -78,6 +55,25 @@ if ($result->num_rows > 0) {
     }
 } else {
     $Branchoptions .= "<option disabled>No Branches found</option>";
+}
+*/
+
+// Fetch only branches accessible to the logged-in user
+$branches = getAccessibleBranches($conn);
+$Branchoptions = "";
+if (!empty($branches)) {
+    foreach ($branches as $branch) {
+        $branchName = htmlspecialchars($branch['Branch_name']);
+        $Branchoptions .= sprintf(
+            '<option value="%s">%s</option>',
+            $branchName,
+            $branchName
+        );
+    }
+} else {
+
+    $Branchoptions = '<option disabled>No Branch Assigned</option>';
+
 }
 
 // Fetch for display (if needed)
@@ -96,6 +92,7 @@ $records = [];
 $conn->close();
 ?>
 
+<script src="js/modal.js"></script>
 
 <html lang="en">
 <head>
@@ -162,18 +159,6 @@ $conn->close();
       margin-top: 20px;
       padding-top: 10px;
     }
-
-.preview-img {
-  max-width: 50px;
-  max-height: 50px;
-  display: block;
-  margin-top: 5px;
-}
-.preview-text {
-  font-style: italic;
-  font-size: 14px;
-  color: #555;
-}
 
 td {
     vertical-align: middle;
@@ -281,23 +266,31 @@ td {
 	 <div class="edu-section">
 	<table>
      <tr> 
-	 <td ><label>Name: </label></td><td > <input  type="text" name="name" id="name" class="required" maxlength="50"> </td>
-	  <td style="width:50px;"></td> <td style="width:200px;" ><label>Passport No.: </label></td>	 <td > <input type="text" name="Passport_no" maxlength="50" class="required"> </td>
+	 <td ><label>Name: </label></td>
+	 <td> 
+	 <input type="text" name="name" id="name" class="required" maxlength="50" autocomplete="name"> 
+	 </td>
+	  <td style="width:50px;"></td> <td style="width:200px;" ><label>Passport No.: </label></td>	 
+	  <td > <input type="text" name="Passport_no" maxlength="50" class="required" autocomplete="off"> </td>
 	 <td ><input type="file" name="Passport_Upload" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"  onchange="previewFile(this, 'preview_passport')" class="required"></td>
 	 <td ><div id="preview_passport" class="preview-text"></div></td>
 	 </tr>
      
-	 <tr> <td><label>Email: </label></td><td><input type="email" name="email" id="email" class="required" maxlength="100" ></td>
+	 <tr> <td><label>Email: </label></td>
+	 <td>
+	 <input type="email" name="email" id="email" class="required" maxlength="100" autocomplete="email" >
+	 </td>
 	<td style="width:50px;"></td><td>  <label>Date of Issue: </label></td>  <td> <input type="date" name="Passport_issue" class="required"> </td>
 	 </tr>
 
      <tr> 
-	 <td><label>Address:</label></td><td><input type="text" name="address" id="address" class="required"></td>
+	 <td><label>Address:</label></td>
+	 <td><input type="text" name="address" maxlength="255" id="address" class="required" autocomplete="street-address"></td>
 	 <td style="width:50px;"></td><td><label>Date of Expiry: </label></td>  <td> <input type="date" name="Passport_Expiry" class="required"> </td>
 	 </tr>
 	 
      <tr> <td><label>Phone: </label></td><td>
-	 <input type="text" name="phone" id="phone" class="required" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit phone number">
+	 <input type="text" name="phone" id="phone" class="required" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit phone number" autocomplete="tel">
 	 
 	 </td>
 
@@ -373,10 +366,10 @@ td {
 		 <div class="edu-section">
 		<table>
 		 <tr> 
-		 <td><label>Name: </label></td><td style="width:50px;"></td><td > <input  type="text" name="emergency_name" id="emergency_name"  maxlength="50"> </td>
+		 <td><label>Name: </label></td><td style="width:50px;"></td><td > <input type="text" name="emergency_name" id="emergency_name"  maxlength="50" autocomplete="name"> </td>
 		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Emergency Phone: </label></td>	 
 		  <td > 
-		  <input type="text" name="emergency_phone" id="emergency_phone"  pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit phone number"> 
+		  <input type="text" name="emergency_phone" id="emergency_phone"  pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit phone number" autocomplete="tel"> 
 		  
 		  </td>
 		 <td ></td>
@@ -384,7 +377,8 @@ td {
 		 </tr>
 		 
 		  <tr> 
-		 <td><label>Email: </label></td><td style="width:50px;"></td><td > <input  type="text" name="emergency_email" id="emergency_email"  maxlength="50"> </td>
+		 <td><label>Email: </label></td><td style="width:50px;"></td><td > 
+		 <input type="text" name="emergency_email" id="emergency_email"  maxlength="50" autocomplete="email"> </td>
 		  <td style="width:50px;"></td> <td style="width:200px;" ><label>Relationship: </label></td>	 
 		  <td > <input  type="text" name="emergency_relation" id="emergency_relation"  maxlength="50"> </td>
 		 <td ></td>
@@ -1294,6 +1288,69 @@ function goToTab0() {
 </script>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    showTab(0);
+
+    const fields = document.querySelectorAll('.required');
+
+    fields.forEach(field => {
+
+        field.addEventListener('input', () => {
+
+            if (!field.classList.contains('invalid')) {
+                return;
+            }
+
+            if (field.type === 'file') {
+                return;
+            }
+
+            if (field.tagName.toLowerCase() === 'select') {
+
+                if (field.value) {
+                    field.classList.remove('invalid');
+                }
+
+                return;
+            }
+
+            if (field.type === 'email') {
+
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (emailPattern.test(field.value.trim())) {
+                    field.classList.remove('invalid');
+                }
+
+                return;
+            }
+
+            if (field.value.trim() !== '') {
+                field.classList.remove('invalid');
+            }
+
+        });
+
+        if (field.type === 'file') {
+
+            field.addEventListener('change', () => {
+
+                if (field.files.length > 0) {
+                    field.classList.remove('invalid');
+                }
+
+            });
+
+        }
+
+    });
+
+});
+</script>
+
+<!--
+<script>
   document.addEventListener("DOMContentLoaded", () => showTab(0));
 </script>
 
@@ -1334,12 +1391,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
-
+-->
 
 <script>
 function showModal(options) {
-
-console.log("Modal Called");
 
     // Default values
     let settings = {
