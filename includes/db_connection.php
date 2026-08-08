@@ -1,22 +1,57 @@
 <?php
+/******************************************************************************
+ * StudyConnect
+ *
+ * File    : includes/db_connection.php
+ * Purpose : Centralized Database Connection
+ ******************************************************************************/
 
-
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
-$database = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 /*
-$host = "localhost";
-$dbname = "studyconnect";
-$username = "StudyConnect";
-$password = "Study@2025";
+|--------------------------------------------------------------------------
+| Load .env only if present (Local Development)
+|--------------------------------------------------------------------------
 */
-//$conn = new mysqli($host, $username, $password, $dbname);
-$conn = mysqli_connect($host, $user, $password, $database, $port);
 
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
 
-if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
+if (file_exists($autoload))
+{
+    require_once $autoload;
+
+    if (class_exists(\Dotenv\Dotenv::class))
+    {
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+        $dotenv->safeLoad();
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Database Configuration
+|--------------------------------------------------------------------------
+*/
+
+$host     = getenv('MYSQLHOST')     ?: 'localhost';
+$port     = (int)(getenv('MYSQLPORT') ?: 3306);
+$dbname   = getenv('MYSQLDATABASE') ?: 'studyconnect';
+$username = getenv('MYSQLUSER')     ?: 'StudyConnect';
+$password = getenv('MYSQLPASSWORD') ?: 'Study@2025';
+
+try
+{
+    $conn = new mysqli(
+        $host,
+        $username,
+        $password,
+        $dbname,
+        $port
+    );
+
+    $conn->set_charset('utf8mb4');
+}
+catch (mysqli_sql_exception $e)
+{
+    die("Database connection failed: " . $e->getMessage());
 }
