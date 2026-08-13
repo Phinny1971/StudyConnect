@@ -2,6 +2,7 @@
 ob_start();
 session_start();
 
+require_once 'includes/access_helper.php';
 require_once 'includes/helpers.php';
 require_once 'includes/db_connection.php';
 require_once 'includes/password_helper.php';
@@ -57,6 +58,13 @@ if ($user = $result->fetch_assoc()) {
         $_SESSION['status_id'] = $user['status_id'];
 		$_SESSION['permissions'] = getUserPermissions($conn, (int)$user['user_id']);
 		$_SESSION['roles'] = getUserRoles($conn, (int)$user['user_id'] );
+		
+		$accessibleBranches = getAccessibleBranches($conn);
+		$_SESSION['branches'] = array_column(
+			$accessibleBranches,
+			'Branch_name'
+		);
+		
         $_SESSION['login_time'] = time();
         $_SESSION['last_activity'] = time();
 		$_SESSION['force_password_change'] = (int)$user['force_password_change'];

@@ -821,11 +821,12 @@ function togglePaymentStatus(studentId, university, checkbox)
 
         method:"POST",
 
-        data:{
-            student_id:studentId,
-            university:university,
-            payment_status:paymentStatus
-        },
+		data:{
+			student_id:studentId,
+			university:university,
+			payment_status:paymentStatus,
+			csrf_token:csrfToken
+		},
 
         success:function()
         {
